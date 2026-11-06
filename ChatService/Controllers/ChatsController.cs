@@ -1,3 +1,4 @@
+using ChatService.Contracts;
 using ChatService.DomainModel.Entities;
 using ChatService.ServiceLayer.CreateChat;
 using MediatR;
@@ -5,9 +6,6 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace ChatService.Controllers
 {
-
-    public record CreateChatRequest(string Name, Guid CreatedByUserId);// SKal du være her??
-    public record ChatDto(Guid Id, string Name);// SKal du være her?? 
 
     [ApiController]
     [Route("api/[controller]")]
