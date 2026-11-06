@@ -1,0 +1,19 @@
+@page
+@model IndexModel
+@{
+    ViewData["Title"] = "Forside";
+}
+
+<div class="text-center mt-5">
+    <h1 class="display-5">Velkommen, @Model.UserName</h1>
+    <p class="text-muted">Bruger-id: @Model.UserId</p>
+
+    <form method="post" asp-page-handler="CreateChat">
+        <button type="submit" class="btn btn-primary btn-lg">Create chat</button>
+    </form>
+
+    @if (Model.StatusMessage is not null)
+    {
+        <div class="alert alert-info mt-4 d-inline-block">@Model.StatusMessage</div>
+    }
+</div>
