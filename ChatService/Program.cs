@@ -1,11 +1,10 @@
+using ChatService.Repositories;
+using ChatService.Repositories.Interfaces;
+
 // ===== FASE 1: Registrér services (hvad appen HAR) =====
 // Alt med builder.Services.Add... skal stå FØR Build()
 
 // 1. Laver en "builder", som samler konfiguration, logging og DI-containeren. Altid først.
-
-using ChatService.Repositories;
-using ChatService.Repositories.Interfaces;
-
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.

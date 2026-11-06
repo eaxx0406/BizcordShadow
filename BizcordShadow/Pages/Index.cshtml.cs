@@ -23,12 +23,17 @@ namespace BizcordShadow.Pages
         {
         }
 
-        public IActionResult OnPostCreateChat()
+        public async Task<IActionResult> OnPostCreateChat()
         {
-            // TODO: Aktivér når GatewayAPI er klar:
-            // var ok = await _gateway.CreateChatAsync(new CreateChatRequest("Ny chat", CurrentUser.Id));
-            // (gør metoden async Task<IActionResult>)
-            StatusMessage = "Create chat er ikke koblet til GatewayAPI endnu.";
+            try
+            {
+                var ok = await _gateway.CreateChatAsync(new CreateChatRequest("Ny chat", CurrentUser.Id));
+                StatusMessage = ok ? "Chat oprettet." : "Gatewayen svarede med en fejl.";
+            }
+            catch (HttpRequestException)
+            {
+                StatusMessage = "Kunne ikke få forbindelse til GatewayAPI. Kører den?";
+            }
             return Page();
         }
     }

@@ -1,0 +1,19 @@
+{
+  "Routes": [
+    {
+      "UpstreamPathTemplate": "/api/chats", // The path that the client will use to access the API Gateway
+      "UpstreamHttpMethod": [ "GET", "POST"], // The HTTP methods that the client can use to access the API Gateway
+      "DownstreamPathTemplate": "/api/chats", // The path that the API Gateway will use to access the downstream service
+      "DownstreamScheme": "http", // The scheme that the API Gateway will use to access the downstream service
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost", // The host of the downstream service
+          "Port": 5210 // The port of the downstream service
+        }
+      ]
+    }
+  ],
+  "GlobalConfiguration": {
+    "BaseUrl": "http://localhost:5065" // The address of the API Gateway itself
+  }
+}

@@ -28,13 +28,13 @@ namespace ChatService.Repositories
             {
                 //Indsæt ChatEntity i databasen
                 await connection.ExecuteAsync(
-                    "INSERT INTO chats (id, name) VALUES (@Id, @Name)",
+                    "INSERT INTO chat (id, name) VALUES (@Id, @Name)",
                     entity,
                     transaction);
 
                 //indsæt ParticipationEntity i databasen
                 await connection.ExecuteAsync(
-                    "INSERT INTO participations (id, chat_id, participant_id, joined_at) VALUES (@Id, @ChatId, @ParticipantId, @JoinedAt)",
+                    "INSERT INTO participation (id, chat_id, participant_id, joined_at) VALUES (@Id, @ChatId, @ParticipantId, @JoinedAt)",
                     entity.Participations,
                     transaction);
 
