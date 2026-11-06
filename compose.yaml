@@ -1,0 +1,25 @@
+# Lokal infrastruktur til udvikling. Services (ChatService, GatewayAPI, frontend) køres stadig fra Visual Studio.
+# Start:  docker compose up -d
+# Nulstil database (kør schema/seed igen): docker compose down -v && docker compose up -d
+name: bizcord
+services:
+  chatdb:
+    image: postgres:17-bookworm
+    environment:
+      POSTGRES_DB: chatdb
+      POSTGRES_USER: ${POSTGRES_USER:-bizcord}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-bizcord}
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d chatdb"]
+      interval: 2s
+      timeout: 5s
+      retries: 30
+    volumes:
+      - chatdata:/var/lib/postgresql/data
+      # Scripts i /docker-entrypoint-initdb.d køres i alfabetisk rækkefølge, KUN første gang (tom volume)
+      - ./database/chatservice/01-schema.sql:/docker-entrypoint-initdb.d/01-schema.sql:ro
+      - ./database/chatservice/02-seed.sql:/docker-entrypoint-initdb.d/02-seed.sql:ro
+volumes:
+  chatdata:
