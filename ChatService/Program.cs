@@ -4,6 +4,7 @@
 // 1. Laver en "builder", som samler konfiguration, logging og DI-containeren. Altid først.
 
 using ChatService.Repositories;
+using ChatService.Repositories.Interfaces;
 
 var builder = WebApplication.CreateBuilder(args);
 
