@@ -15,11 +15,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Controllers\" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <ProjectReference Include="..\Shared\Shared.csproj" />
     <ProjectReference Include="..\ChatService.Contracts\ChatService.Contracts.csproj" />
   </ItemGroup>
 

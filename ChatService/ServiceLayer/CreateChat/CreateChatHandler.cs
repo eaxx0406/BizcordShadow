@@ -19,7 +19,7 @@ namespace ChatService.ServiceLayer.CreateChat
             Chat newChat = new Chat(command.Name);
             newChat.AddParticipant(command.CreatedByUserId);
 
-            await _chatWriteRepository.CreateAsync(newChat);
+            await _chatWriteRepository.CreateAsync(newChat, cancellationToken);
             return newChat;
         }
     }

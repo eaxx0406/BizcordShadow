@@ -9,5 +9,4 @@
     <Project Path="ChatService.Contracts/ChatService.Contracts.csproj" />
     <Project Path="ChatService/ChatService.csproj" />
   </Folder>
-  <Project Path="Shared/Shared.csproj" Id="846eb29d-4134-4ef2-8c88-cb302c7aa254" />
 </Solution>
