@@ -1,17 +1,21 @@
 ﻿namespace ChatService.DomainModel.Entities
 {
+    // Leverings- og læsekvittering for én modtager af én besked.
+    // Ingen egen Id: identiteten er (MessageId, ReceiverId), samme som primary key i databasen.
     public class MessageReceipt
     {
-        public Guid Id { get; set; }
+        public Guid MessageId { get; private set; }
 
-        public Guid MessageId { get; set; }
-        public Message Message { get; set; } = null!;
+        // Modtager er en Participant, uafhængig af medlemskabshistorik
+        public Guid ReceiverId { get; private set; }
 
-        // Receiver is a participant, independent of participation history
-        public Guid ReceiverId { get; set; }
-        public Participant Receiver { get; set; } = null!;
+        public DateTimeOffset? DeliveredAt { get; private set; }
+        public DateTimeOffset? SeenAt { get; private set; }
 
-        public DateTimeOffset? DeliveredAt { get; set; }
-        public DateTimeOffset? SeenAt { get; set; }
+        public MessageReceipt(Guid messageId, Guid receiverId)
+        {
+            MessageId = messageId;
+            ReceiverId = receiverId;
+        }
     }
 }
