@@ -1,4 +1,4 @@
-@page
+@page "{id:guid?}"
 @model ChatModel
 @using Bizcord.Models
 @{
@@ -32,7 +32,7 @@
             {
                 var chat = Model.Chats[i];
                 <li>
-                    <a href="#" class="chat-item @(i == 0 ? "active" : "")" data-name="@chat.Name.ToLowerInvariant()">
+                    <a href="#" class="chat-item @(i == 0 && Model.OpenChatId is null ? "active" : "")" data-name="@chat.Name.ToLowerInvariant()">
                         <span class="chat-avatar"><i class="bi @(chat.IsGroup ? "bi-people" : "bi-person")" aria-hidden="true"></i></span>
                         <span class="chat-item-body">
                             <span class="chat-item-top">
@@ -54,6 +54,77 @@
         <p class="chat-empty" id="chatEmpty" hidden>Ingen chats matcher søgningen.</p>
     </section>
 
+    @if (Model.OpenChat is not null)
+    {
+        var chat = Model.OpenChat;
+        <!-- Højre: den åbne chat (beskeder kommer senere) og medlemmer -->
+        <section class="chat-room" aria-label="@chat.Name">
+            <header class="chat-room-head">
+                <span class="chat-avatar"><i class="bi @(chat.Participants.Count > 2 ? "bi-people" : "bi-person")" aria-hidden="true"></i></span>
+                <div class="chat-room-title">
+                    <h2>@chat.Name</h2>
+                    <small>@chat.Participants.Count medlemmer</small>
+                </div>
+                <button type="button" class="btn bz-btn-icon ms-auto" data-bs-toggle="modal" data-bs-target="#addParticipantModal"
+                        title="Tilføj deltager" aria-label="Tilføj deltager">
+                    <i class="bi bi-person-plus" aria-hidden="true"></i>
+                </button>
+            </header>
+
+            @if (Model.FlashMessage is not null)
+            {
+                <div class="alert alert-success alert-dismissible fade show mx-3 mt-3 mb-0" role="status">
+                    @Model.FlashMessage
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Luk"></button>
+                </div>
+            }
+
+            <div class="chat-room-body">
+                <div class="chat-messages">
+                    <div class="chat-messages-empty">
+                        <i class="bi bi-chat-heart" aria-hidden="true"></i>
+                        <strong>Ingen beskeder endnu</strong>
+                        <small>Sig hej til @string.Join(", ", chat.Participants.Where(p => p.UserId != Model.UserId).Select(p => p.Name))!</small>
+                    </div>
+                </div>
+
+                <aside class="chat-members" aria-labelledby="membersTitle">
+                    <h3 id="membersTitle">Medlemmer <span>(@chat.Participants.Count)</span></h3>
+                    <ul>
+                        @foreach (var member in chat.Participants)
+                        {
+                            <li>
+                                <span class="chat-avatar"><i class="bi bi-person" aria-hidden="true"></i></span>
+                                <span>@member.Name</span>
+                                @if (member.UserId == Model.UserId)
+                                {
+                                    <small>(dig)</small>
+                                }
+                            </li>
+                        }
+                    </ul>
+                </aside>
+            </div>
+
+            <!-- Skrivefelt: kun udseende, beskeder er ikke implementeret endnu -->
+            <form class="chat-composer" onsubmit="return false;">
+                <input type="text" class="form-control" placeholder="Beskeder kommer snart …" aria-label="Skriv en besked" disabled />
+                <button type="submit" class="btn bz-btn-primary" disabled aria-label="Send">
+                    <i class="bi bi-send" aria-hidden="true"></i>
+                </button>
+            </form>
+        </section>
+    }
+    else if (Model.OpenChatError is not null)
+    {
+        <section class="chat-welcome justify-content-center">
+            <h2 class="welcome-title">Chatten kunne ikke hentes</h2>
+            <div class="alert alert-danger" role="alert">@Model.OpenChatError</div>
+            <a class="btn btn-outline-light" href="~/Chat">Tilbage til dine chats</a>
+        </section>
+    }
+    else
+    {
     <!-- Højre: velkomst og handlinger -->
     <section class="chat-welcome">
         <img class="chat-hero" src="~/img/mascot-laptop.png" alt="Bizcord-maskotten sidder glad ved sin computer" />
@@ -82,6 +153,7 @@
             </button>
         </div>
     </section>
+    }
 </div>
 
 @section Modals {
@@ -97,14 +169,7 @@
                 <div class="modal-body">
                     @if (Model.OpenDialog == "create" && Model.StatusMessage is not null)
                     {
-                        <div class="alert @(Model.IsError ? "alert-danger" : "alert-success")" role="alert">
-                            @Model.StatusMessage
-                            @if (!Model.IsError)
-                            {
-                                <button type="button" class="btn btn-link alert-link p-0 d-block mt-1"
-                                        data-bs-toggle="modal" data-bs-target="#addParticipantModal">Tilføj flere deltagere senere →</button>
-                            }
-                        </div>
+                        <div class="alert alert-danger" role="alert">@Model.StatusMessage</div>
                     }
 
                     <div class="mb-3">
@@ -150,7 +215,7 @@
                 <div class="modal-body">
                     @if (Model.OpenDialog == "add" && Model.StatusMessage is not null)
                     {
-                        <div class="alert @(Model.IsError ? "alert-danger" : "alert-success")" role="alert">@Model.StatusMessage</div>
+                        <div class="alert alert-danger" role="alert">@Model.StatusMessage</div>
                     }
 
                     <input type="hidden" asp-for="ChatName" />
