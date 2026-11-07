@@ -1,4 +1,5 @@
 ﻿using ChatService.DomainModel.Entities;
+using ChatService.DomainModel.Exceptions;
 using ChatService.Repositories.Interfaces;
 using MediatR;
 
@@ -21,13 +22,13 @@ namespace ChatService.ServiceLayer.AddParticipant
             Chat? chat = await _chatReadRepository.GetByIdAsync(command.ChatId, cancellationToken);
             if (chat == null)
             {
-                throw new Exception($"Chat with ID {command.ChatId} not found.");
+                throw new NotFoundException("Chatten findes ikke.");
             }
             // Oversæt user-id (som klienten kender) til participant-id (som ChatService bruger), se ADR 0003
             Guid? participantId = await _participantReadRepository.GetIdByUserIdAsync(command.UserId, cancellationToken);
             if (participantId == null)
             {
-                throw new Exception($"User with ID {command.UserId} not found.");
+                throw new NotFoundException("Brugeren findes ikke.");
             }
             // Add the participant to the chat
             Participation newParticipation = chat.AddParticipant(participantId.Value);

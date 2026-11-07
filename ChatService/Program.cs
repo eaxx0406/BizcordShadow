@@ -1,3 +1,4 @@
+using ChatService.ExceptionHandling;
 using ChatService.Repositories;
 using ChatService.Repositories.Interfaces;
 
@@ -7,23 +8,19 @@ using ChatService.Repositories.Interfaces;
 // 1. Laver en "builder", som samler konfiguration, logging og DI-containeren. Altid først.
 var builder = WebApplication.CreateBuilder(args);
 
+// Fejlhåndtering (ADR 0011): ProblemDetails som fejlformat, og vores handler oversætter exceptions til statuskoder
+builder.Services.AddProblemDetails();
+builder.Services.AddExceptionHandler<DomainExceptionHandler>();
+
 // Add services to the container.
 //MediatR scans the assembly for handlers, requests, and notifications and registers them with the DI container.
 builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(typeof(Program).Assembly));
 
-// Register the IChatWriteRepository implementation with the DI container
+// Register the IRepository implementation with the DI container
 builder.Services.AddScoped<IChatWriteRepository, ChatWriteRepository>();
-
-// Register the IChatReadRepository implementation with the DI container
 builder.Services.AddScoped<IChatReadRepository, ChatReadRepository>();
-
-// Register the IParticipantReadRepository implementation with the DI container
 builder.Services.AddScoped<IParticipantReadRepository, ParticipantReadRepository>();
-
-// Register the IParticipationReadRepository implementation with the DI container
 builder.Services.AddScoped<IParticipationReadRepository, ParticipationReadRepository>();
-
-// Register the IMessageWriteRepository implementation with the DI container
 builder.Services.AddScoped<IMessageWriteRepository, MessageWriteRepository>();
 
 // Dapper: map snake_case-kolonner (chat_id) til PascalCase-properties (ChatId), når der LÆSES fra databasen (se ADR 0006).
@@ -41,6 +38,9 @@ var app = builder.Build();
 
 // ===== FASE 2: Pipeline (hvad der sker med hver request) =====
 // Alt med app.Use... og app.Map... står EFTER Build() og køres i den rækkefølge, de står i
+
+// Det YDERSTE lag: fanger exceptions fra alle lag efter den (controllere, MediatR, repositories) og sender dem til DomainExceptionHandler
+app.UseExceptionHandler();
 
 // Configure the HTTP request pipeline.
 // 5. Tjekker, om appen kører i development.

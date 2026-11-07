@@ -1,4 +1,5 @@
 using ChatService.DomainModel.Entities;
+using ChatService.DomainModel.Exceptions;
 using ChatService.Repositories.Interfaces;
 using MediatR;
 
@@ -22,11 +23,11 @@ namespace ChatService.ServiceLayer.SendMessage
             Guid? senderParticipationId = await _participationReadRepository.GetActiveIdAsync(command.ChatId, command.SenderUserId, cancellationToken);
             if (senderParticipationId == null)
             {
-                // TODO (sammen): hvilken regel er det her, og hvor hører den hjemme? Og hvilken statuskode skal klienten have?
-                throw new Exception($"User with ID {command.SenderUserId} is not an active member of chat {command.ChatId}.");
+                // Kun medlemmer må skrive. Samme svar, uanset om chatten ikke findes eller man ikke er medlem (ADR 0013)
+                throw new ForbiddenException("Du har ikke adgang til denne chat.");
             }
 
-            // TODO (sammen): regler for indholdet (tomt, maks længde) og modtagernes MessageReceipts
+            // TODO (sammen): modtagernes MessageReceipts (tom besked afvises allerede med [Required] i SendMessageRequest)
             Message newMessage = new Message(command.ChatId, senderParticipationId.Value, command.Content);
 
             await _messageWriteRepository.AddAsync(newMessage, cancellationToken);
