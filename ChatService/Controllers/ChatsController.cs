@@ -3,6 +3,7 @@ using ChatService.DomainModel.Entities;
 using ChatService.ServiceLayer.AddParticipant;
 using ChatService.ServiceLayer.CreateChat;
 using ChatService.ServiceLayer.GetChatById;
+using ChatService.ServiceLayer.GetMyChats;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 
@@ -20,7 +21,24 @@ namespace ChatService.Controllers
             _mediator = mediator;
         }
 
-        // POST api/chats 
+        // GET api/chats?userId=...
+        // userId sendes af klienten, indtil der findes login. Så forsvinder parameteren, og GET api/chats betyder "mine".
+        [HttpGet]
+        public async Task<ActionResult<IReadOnlyList<ChatSummaryDto>>> GetMine([FromQuery] Guid userId, CancellationToken cancellationToken)
+        {
+            // Validate the request
+            if (userId == Guid.Empty)
+            {
+                return BadRequest("User ID cannot be empty.");
+            }
+
+            //MediatR will handle the query and return the user's chats (an empty list if there are none)
+            IReadOnlyList<ChatSummaryDto> chats = await _mediator.Send(new GetMyChatsQuery(userId), cancellationToken);
+
+            return Ok(chats);
+        }
+
+        // POST api/chats
         [HttpPost] //skal vi kalde den noget med newchat? eller createchat? ocelot skal i såfald opdateres
         public async Task<ActionResult<ChatDto>> Create(CreateChatRequest request, CancellationToken cancellationToken)
         {
