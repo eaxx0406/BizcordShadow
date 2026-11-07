@@ -1,52 +1,38 @@
 @page
 @model IndexModel
-@using Bizcord.Models
 @{
-    ViewData["Title"] = "Forside";
+    ViewData["Title"] = "Velkommen";
+    ViewData["ActiveNav"] = "Kanaler";
 }
 
-<div class="mx-auto mt-4" style="max-width: 640px;">
-    <h1 class="display-6">Velkommen, @Model.UserName</h1>
-    <p class="text-muted small">Bruger-id: @Model.UserId</p>
+<section class="welcome">
+    <img class="welcome-hero" src="~/img/mascot-scene.png" alt="Bizcord-maskotten ved sin computer med en tjekliste: Opret en kanal, Invitér venner, Start en samtale" />
 
-    @if (Model.StatusMessage is not null)
-    {
-        <div class="alert @(Model.IsError ? "alert-danger" : "alert-success")" role="alert">@Model.StatusMessage</div>
-    }
+    <h1 class="welcome-title">Velkommen til Biz<span class="brand-gradient">cord</span></h1>
+    <p class="welcome-text">
+        Her er der stadig lidt tomt …<br />
+        Kom i gang ved at oprette eller deltage i en kanal.
+    </p>
 
-    <div class="card mb-3">
-        <div class="card-body">
-            <h2 class="h5 card-title">1. Opret chat</h2>
-            <form method="post" asp-page-handler="CreateChat" class="d-flex gap-2">
-                <input asp-for="NewChatName" class="form-control" placeholder="Navn på chat" aria-label="Navn på chat" />
-                <button type="submit" class="btn btn-primary text-nowrap">Opret chat</button>
-            </form>
-            <div class="form-text">Lad navnet være tomt for at teste validering.</div>
-        </div>
+    <div class="welcome-actions">
+        <a class="bz-action bz-action-primary" asp-page="/Chat">
+            <i class="bi bi-plus-circle" aria-hidden="true"></i>
+            <span>
+                <strong>Opret en kanal</strong>
+                <small>Start dit eget fællesskab</small>
+            </span>
+        </a>
+        <a class="bz-action bz-action-secondary" asp-page="/Chat">
+            <i class="bi bi-people" aria-hidden="true"></i>
+            <span>
+                <strong>Deltag i en kanal</strong>
+                <small>Brug en invitation</small>
+            </span>
+        </a>
     </div>
 
-    <div class="card">
-        <div class="card-body">
-            <h2 class="h5 card-title">2. Tilføj deltager</h2>
-            <form method="post" asp-page-handler="AddParticipant">
-                <input type="hidden" asp-for="ChatName" />
-                <input type="hidden" asp-for="NewChatName" />
-
-                <div class="mb-2">
-                    <label asp-for="ChatId" class="form-label">
-                        Chat @if (Model.ChatName is not null) { <span class="text-muted">(@Model.ChatName)</span> }
-                    </label>
-                    <input asp-for="ChatId" class="form-control font-monospace" placeholder="Opret en chat eller indsæt et chat-id" />
-                </div>
-
-                <div class="mb-3">
-                    <label asp-for="NewParticipantUserId" class="form-label">Bruger</label>
-                    <select asp-for="NewParticipantUserId" class="form-select"
-                            asp-items="@(new SelectList(Model.OtherUsers, nameof(TestUser.Id), nameof(TestUser.Name)))"></select>
-                </div>
-
-                <button type="submit" class="btn btn-primary">Tilføj deltager</button>
-            </form>
-        </div>
-    </div>
-</div>
+    <p class="welcome-hint">
+        <i class="bi bi-chat-dots" aria-hidden="true"></i>
+        Du kan også starte en privat samtale fra <a asp-page="/Chat">Chat.</a>
+    </p>
+</section>
