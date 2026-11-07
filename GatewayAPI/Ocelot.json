@@ -24,6 +24,19 @@
           "Port": 5210 // The port of the downstream service
         }
       ]
+    },
+    {
+      // Hent én chat med medlemmer
+      "UpstreamPathTemplate": "/api/chats/{chatId}",
+      "UpstreamHttpMethod": [ "GET" ],
+      "DownstreamPathTemplate": "/api/chats/{chatId}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 5210
+        }
+      ]
     }
   ],
   "GlobalConfiguration": {

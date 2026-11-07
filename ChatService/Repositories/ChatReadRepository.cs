@@ -1,4 +1,5 @@
-﻿using ChatService.DomainModel.Entities;
+﻿using ChatService.Contracts;
+using ChatService.DomainModel.Entities;
 using ChatService.Repositories.Interfaces;
 using Dapper;
 using Npgsql;
@@ -52,6 +53,40 @@ namespace ChatService.Repositories
                 .ToList();
 
             return Chat.Rehydrate(chatRow.Id, chatRow.Name, participations);
+        }
+
+        public async Task<ChatDetailsDto?> GetDetailsByIdAsync(Guid id, CancellationToken cancellationToken)
+        {
+            //Forbind til databasen
+            await using var connection = new NpgsqlConnection(_connectionString);
+
+            //Åbn forbindelsen
+            await connection.OpenAsync(cancellationToken);
+
+            //1) hent chatten
+            ChatRow? chatRow = await connection.QuerySingleOrDefaultAsync<ChatRow>(new CommandDefinition(
+                "SELECT id, name FROM chat WHERE id = @Id",
+                new { Id = id },
+                cancellationToken: cancellationToken));
+
+            //return null, hvis chatten ikke findes (controlleren laver det til 404)
+            if (chatRow is null)
+            {
+                return null;
+            }
+
+            //2) hent de AKTIVE medlemmer med navn: navnet står på participant, ikke på participation, derfor en JOIN
+            //(AS UserId, så Dapper kan matche kolonnen med parameteren i ChatMemberDto's konstruktor)
+            IEnumerable<ChatMemberDto> members = await connection.QueryAsync<ChatMemberDto>(new CommandDefinition(
+                @"SELECT p.user_id AS UserId, p.name AS Name
+                  FROM participation pa
+                  JOIN participant p ON p.id = pa.participant_id
+                  WHERE pa.chat_id = @ChatId AND pa.left_at IS NULL
+                  ORDER BY pa.joined_at",
+                new { ChatId = id },
+                cancellationToken: cancellationToken));
+
+            return new ChatDetailsDto(chatRow.Id, chatRow.Name, members.ToList());
         }
     }
 }

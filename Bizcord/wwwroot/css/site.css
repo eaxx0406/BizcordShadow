@@ -456,9 +456,78 @@ body {
 .member-option .form-check-input { margin: 0; flex: none; }
 .member-option .chat-avatar { width: 2.4rem; height: 2.4rem; font-size: 1.1rem; }
 
+/* ===== Åben chat: beskeder (kommer senere), medlemmer og skrivefelt ===== */
+.chat-room {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  background: rgba(26, 29, 59, .7);
+  border: 1px solid rgba(255, 255, 255, .08);
+  border-radius: 18px;
+}
+
+.chat-room-head {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem 1.25rem;
+  border-bottom: 1px solid rgba(255, 255, 255, .08);
+}
+.chat-room-title { min-width: 0; }
+.chat-room-title h2 { font-size: 1.4rem; font-weight: 600; margin: 0; overflow-wrap: anywhere; }
+.chat-room-title small { color: var(--bz-text-muted); }
+
+.chat-room-body {
+  flex: 1;
+  display: grid;
+  grid-template-columns: 1fr 240px;
+  min-height: 0;
+}
+
+.chat-messages {
+  display: grid;
+  place-items: center;
+  padding: 2rem 1rem;
+}
+.chat-messages-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: .35rem;
+  text-align: center;
+  color: var(--bz-text-muted);
+}
+.chat-messages-empty i { font-size: 3rem; color: #b9a8ff; margin-bottom: .4rem; }
+.chat-messages-empty strong { color: var(--bz-text); font-size: 1.2rem; font-weight: 600; }
+
+.chat-members {
+  padding: 1.25rem 1rem;
+  border-left: 1px solid rgba(255, 255, 255, .08);
+}
+.chat-members h3 { font-size: 1rem; font-weight: 600; margin: 0 0 .75rem; }
+.chat-members h3 span { color: var(--bz-text-muted); font-weight: 400; }
+.chat-members ul { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: .25rem; }
+.chat-members li { display: flex; align-items: center; gap: .65rem; padding: .35rem .25rem; }
+.chat-members li small { color: var(--bz-text-muted); }
+.chat-members .chat-avatar { width: 2.2rem; height: 2.2rem; font-size: 1rem; }
+
+.chat-composer {
+  display: flex;
+  gap: .75rem;
+  padding: 1rem 1.25rem;
+  border-top: 1px solid rgba(255, 255, 255, .08);
+}
+.chat-composer .form-control {
+  border-radius: 12px;
+  background: rgba(15, 18, 41, .5);
+  border-color: rgba(198, 199, 219, .35);
+}
+
 @media (max-width: 1100px) {
   .chat-layout { grid-template-columns: 1fr; margin: 0; }
   .chat-actions { grid-template-columns: 1fr; }
+  .chat-room-body { grid-template-columns: 1fr; }
+  .chat-members { border-left: 0; border-top: 1px solid rgba(255, 255, 255, .08); }
 }
 
 /* ===== Smal skærm: sidebar bliver en bjælke foroven ===== */

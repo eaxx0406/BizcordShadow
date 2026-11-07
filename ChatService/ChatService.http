@@ -13,3 +13,8 @@ Content-Type: application/json
 }
 
 ###
+
+# Hent én chat med medlemmer (indsæt et id fra svaret på POST ovenfor)
+GET {{ChatService_HostAddress}}/api/chats/00000000-0000-0000-0000-000000000000
+
+###
