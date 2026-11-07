@@ -14,6 +14,9 @@ builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(typeof(Progr
 // Register the IChatWriteRepository implementation with the DI container
 builder.Services.AddScoped<IChatWriteRepository, ChatWriteRepository>();
 
+// Dapper: map snake_case-kolonner (chat_id) til PascalCase-properties (ChatId), når der LÆSES fra databasen (se ADR 0006).
+Dapper.DefaultTypeMap.MatchNamesWithUnderscores = true;
+
 // 2. Fortæller DI, at appen bruger controllers.
 builder.Services.AddControllers();
 
@@ -35,14 +38,13 @@ if (app.Environment.IsDevelopment())
     app.MapOpenApi();
 }
 
-// 7. Sender http-requests videre til https.
-app.UseHttpsRedirection();
+// (Ingen UseHttpsRedirection: ChatService kaldes over http af gatewayen, og en redirect ville afbryde POST-kald.)
 
-// 8. Tjekker, om brugeren har adgang. Skal stå før endpoints bliver mappet.
+// 7. Tjekker, om brugeren har adgang. Skal stå før endpoints bliver mappet.
 app.UseAuthorization();
 
-// 9. Kobler URL'er til dine controller-metoder.
+// 8. Kobler URL'er til dine controller-metoder.
 app.MapControllers();
 
-// 10. Starter serveren. Altid sidst.
+// 9. Starter serveren. Altid sidst.
 app.Run();
