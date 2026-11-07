@@ -16,7 +16,7 @@ Alternativer for secrets:
 - **.NET user-secrets:** gemmes per bruger uden for repoet og læses automatisk i Development.
 
 ## Beslutning
-- Databasen kører via **`compose.yaml`** i roden. Schema og seed ligger i `database/chatservice/` og køres automatisk første gang databasen oprettes (`/docker-entrypoint-initdb.d`).
+- Databasen kører via **`compose.yaml`** i roden. Schema og seed ligger i `apps/chat-microservice/database/` og køres automatisk første gang databasen oprettes (`/docker-entrypoint-initdb.d`).
 - Services (ChatService, GatewayAPI, frontend) køres stadig fra Visual Studio for nem debugging. Vi laver Dockerfiles, når hele systemet skal kunne køre i containere.
 - Connection strings gemmes med **user-secrets** (`ConnectionStrings:ChatDb`).
 

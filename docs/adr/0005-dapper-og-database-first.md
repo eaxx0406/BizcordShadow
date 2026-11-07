@@ -11,7 +11,7 @@ Alternativer:
 - **Ren ADO.NET/Npgsql:** fuld kontrol, men meget gentaget mapping-kode.
 
 ## Beslutning
-Vi bruger **Dapper** med **Npgsql** og arbejder **database first**: schemaet defineres i `database/chatservice/01-schema.sql`, og repositories skriver SQL, der retter sig efter det.
+Vi bruger **Dapper** med **Npgsql** og arbejder **database first**: schemaet defineres i `apps/chat-microservice/database/01-schema.sql`, og repositories skriver SQL, der retter sig efter det.
 
 ## Konsekvenser
 - ✅ Fuld kontrol over og indsigt i den SQL, der køres.

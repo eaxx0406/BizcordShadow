@@ -3,7 +3,7 @@ namespace Bizcord.Models
     public record TestUser(Guid Id, string Name);
 
     // Hardcodede testbrugere, fordi UserService er uden for scope.
-    // Skal matche participants i database/chatservice/02-seed.sql (som simulerer de events, UserService ville sende).
+    // Skal matche participants i apps/chat-microservice/database/02-seed.sql (som simulerer de events, UserService ville sende).
     // "Ukendt bruger" findes med vilje IKKE i databasen, så fejlhåndteringen (404) kan testes.
     public static class TestUsers
     {

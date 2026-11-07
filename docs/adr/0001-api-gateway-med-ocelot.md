@@ -12,7 +12,7 @@ Alternativer:
 - **YARP:** Microsofts reverse proxy, mere fleksibel men mere at sætte op.
 
 ## Beslutning
-Vi bruger en API Gateway (`GatewayAPI`) bygget med **Ocelot**. Frontend kalder kun gatewayen. Routes defineres i `GatewayAPI/Ocelot.json` (upstream-sti/metode → downstream-service).
+Vi bruger en API Gateway (`GatewayAPI`) bygget med **Ocelot**. Frontend kalder kun gatewayen. Routes defineres i `apps/api-gateway/src/GatewayAPI/Ocelot.json` (upstream-sti/metode → downstream-service).
 
 ## Konsekvenser
 - ✅ Frontend kender kun én adresse. Services kan flyttes/splittes uden at frontend ændres.

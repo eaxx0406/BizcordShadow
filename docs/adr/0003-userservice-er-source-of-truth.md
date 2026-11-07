@@ -24,7 +24,7 @@ Alternativer:
 - ⚠️ `CreateChatHandler` skal slå participant op ud fra `UserId` i stedet for at bruge user-id direkte som participant-id.
 
 ## Midlertidig løsning
-Indtil UserService og events findes, seedes en participant for testbrugeren i `database/chatservice/02-seed.sql`. Den har `id = user_id`, så den nuværende handler virker.
+Indtil UserService og events findes, seedes en participant for testbrugeren i `apps/chat-microservice/database/02-seed.sql`. Den har `id = user_id`, så den nuværende handler virker.
 
 ## Åbent spørgsmål
 Når forholdet er 1:1, kunne `participant.id` være lig `user_id`, så den ekstra nøgle og opslaget falder væk. Det er et almindeligt mønster for read models og bør overvejes i en senere ADR.

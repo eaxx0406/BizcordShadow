@@ -19,7 +19,7 @@ services:
     volumes:
       - chatdata:/var/lib/postgresql/data
       # Scripts i /docker-entrypoint-initdb.d køres i alfabetisk rækkefølge, KUN første gang (tom volume)
-      - ./database/chatservice/01-schema.sql:/docker-entrypoint-initdb.d/01-schema.sql:ro
-      - ./database/chatservice/02-seed.sql:/docker-entrypoint-initdb.d/02-seed.sql:ro
+      - ./apps/chat-microservice/database/01-schema.sql:/docker-entrypoint-initdb.d/01-schema.sql:ro
+      - ./apps/chat-microservice/database/02-seed.sql:/docker-entrypoint-initdb.d/02-seed.sql:ro
 volumes:
   chatdata:
