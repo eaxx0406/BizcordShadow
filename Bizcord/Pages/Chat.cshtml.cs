@@ -18,8 +18,11 @@ namespace Bizcord.Pages
         public string UserName => CurrentUser.Name;
         public Guid UserId => CurrentUser.Id;
 
-        // Chatlisten i venstre side. Dummydata, indtil ChatService kan returnere "mine chats".
-        public IReadOnlyList<ChatPreview> Chats => DummyChats.All;
+        // Chatlisten i venstre side, hentet fra ChatService (GET api/chats?userId=...)
+        public IReadOnlyList<ChatPreview> Chats { get; private set; } = [];
+
+        // Fejl, hvis listen ikke kunne hentes (f.eks. hvis gatewayen ikke kører)
+        public string? ChatsError { get; private set; }
 
         // Brugere, der kan tilføjes (alle testbrugere undtagen en selv)
         public IReadOnlyList<TestUser> OtherUsers => TestUsers.All.Where(u => u.Id != CurrentUser.Id).ToList();
@@ -64,7 +67,7 @@ namespace Bizcord.Pages
 
         public async Task OnGet()
         {
-            await LoadOpenChatAsync();
+            await LoadPageAsync();
         }
 
         public async Task<IActionResult> OnPostCreateChat()
@@ -74,7 +77,7 @@ namespace Bizcord.Pages
             if (NewChatMemberIds.Count == 0)
             {
                 SetError("Vælg mindst ét medlem. En chat kun med dig selv er ikke så interessant.");
-                await LoadOpenChatAsync();
+                await LoadPageAsync();
                 return Page();
             }
 
@@ -84,7 +87,7 @@ namespace Bizcord.Pages
             if (!result.IsSuccess)
             {
                 SetError($"Kunne ikke oprette chat. {result.Error}");
-                await LoadOpenChatAsync();
+                await LoadPageAsync();
                 return Page();
             }
 
@@ -100,7 +103,7 @@ namespace Bizcord.Pages
             if (ChatId is null)
             {
                 SetError("Angiv hvilken chat (opret en chat først, eller indsæt et chat-id).");
-                await LoadOpenChatAsync();
+                await LoadPageAsync();
                 return Page();
             }
 
@@ -110,13 +113,32 @@ namespace Bizcord.Pages
             if (!result.IsSuccess)
             {
                 SetError($"Kunne ikke tilføje {name}. {result.Error}");
-                await LoadOpenChatAsync();
+                await LoadPageAsync();
                 return Page();
             }
 
             // Succes: vis chatten, så den nye deltager kan ses i medlemslisten
             FlashMessage = $"{name} er tilføjet til chatten.";
             return RedirectToPage("/Chat", new { id = ChatId });
+        }
+
+        // Henter det, siden viser: chatlisten og (hvis der er en i URL'en) den åbne chat
+        private async Task LoadPageAsync()
+        {
+            await LoadChatsAsync();
+            await LoadOpenChatAsync();
+        }
+
+        private async Task LoadChatsAsync()
+        {
+            var result = await _gateway.GetMyChatsAsync(CurrentUser.Id);
+            if (!result.IsSuccess)
+            {
+                ChatsError = result.Error;
+                return;
+            }
+
+            Chats = result.Value!.Select(ChatPreview.From).ToList();
         }
 
         // Henter den chat, der står i URL'en, og forudfylder "Tilføj deltager" med den

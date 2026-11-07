@@ -7,7 +7,7 @@
 }
 
 <div class="chat-layout">
-    <!-- Venstre: chatliste (dummydata indtil backend kan levere den) -->
+    <!-- Venstre: brugerens chats fra ChatService, nyeste aktivitet først -->
     <section class="chat-panel" aria-label="Chats">
         <div class="chat-panel-head">
             <h1>Chats</h1>
@@ -28,11 +28,11 @@
         </label>
 
         <ul class="chat-list" id="chatList">
-            @for (var i = 0; i < Model.Chats.Count; i++)
+            @foreach (var chat in Model.Chats)
             {
-                var chat = Model.Chats[i];
                 <li>
-                    <a href="#" class="chat-item @(i == 0 && Model.OpenChatId is null ? "active" : "")" data-name="@chat.Name.ToLowerInvariant()">
+                    <a href="~/Chat/@chat.Id" class="chat-item @(chat.Id == Model.OpenChatId ? "active" : "")"
+                       aria-current="@(chat.Id == Model.OpenChatId ? "page" : null)" data-name="@chat.Name.ToLowerInvariant()">
                         <span class="chat-avatar"><i class="bi @(chat.IsGroup ? "bi-people" : "bi-person")" aria-hidden="true"></i></span>
                         <span class="chat-item-body">
                             <span class="chat-item-top">
@@ -52,6 +52,14 @@
             }
         </ul>
         <p class="chat-empty" id="chatEmpty" hidden>Ingen chats matcher søgningen.</p>
+        @if (Model.ChatsError is not null)
+        {
+            <div class="alert alert-danger mx-2" role="alert">Kunne ikke hente dine chats. @Model.ChatsError</div>
+        }
+        else if (Model.Chats.Count == 0)
+        {
+            <p class="chat-empty">Du har ingen chats endnu. Tryk på <strong>Ny chat</strong> for at starte en.</p>
+        }
     </section>
 
     @if (Model.OpenChat is not null)
