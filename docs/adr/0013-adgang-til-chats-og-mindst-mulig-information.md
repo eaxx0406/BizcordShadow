@@ -26,6 +26,6 @@ Alternativer:
 - ✅ Ét opslag i databasen besvarer både "findes chatten?" og "er du medlem?".
 - ✅ Når rigtig login kommer, skal kun kilden til user-id'et ændres, ikke reglen.
 - ⚠️ Sværere at fejlsøge for klienten, og indtil vi får logging, står den rigtige grund ingen steder.
-- ⚠️ **Kendt hul:** `GET /api/chats/{id}` returnerer i dag chatten til alle og svarer `404` for en ukendt chat. Den afslører altså både at chatten findes, og hvem der er med. Vi accepterer det, indtil der findes identitet. Så bliver læsning også kun for medlemmer med samme regel (`403`).
+- ✅ Læsning følger samme regel: `GET /api/chats/{id}` og `GET /api/chats/{chatId}/messages` svarer også `403` til ikke-medlemmer (lukket 2026-11-07).
 - ⚠️ **Kendt hul:** Uden login kan alle udgive sig for at være hvem som helst ved at sende et andet user-id. Det er bevidst fravalgt dette semester.
 - ℹ️ Chat-id'er er tilfældige GUID'er, så de er i praksis umulige at gætte. Princippet om mindst mulig information gælder alligevel, fordi id'er kan lække (logs, delte links, skærmbilleder).

@@ -33,6 +33,11 @@ create table message (
     sent_at   timestamptz not null
 );
 
+-- Keyset paging (ADR 0014): "de nyeste beskeder i en chat, ældre end X" bliver et opslag i dette index,
+-- uanset hvor mange beskeder chatten har. Bruges også af "seneste besked" i listen over mine chats.
+create index ix_message_chat_sent
+    on message (chat_id, sent_at desc, id desc);
+
 create table message_receipt (
     message_id   uuid not null references message(id) on delete restrict,
     receiver_id  uuid not null references participant(id) on delete restrict,
