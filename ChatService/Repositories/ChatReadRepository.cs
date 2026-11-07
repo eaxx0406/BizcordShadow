@@ -88,5 +88,55 @@ namespace ChatService.Repositories
 
             return new ChatDetailsDto(chatRow.Id, chatRow.Name, members.ToList());
         }
+
+        public async Task<IReadOnlyList<ChatSummaryDto>> GetSummariesForUserAsync(Guid userId, CancellationToken cancellationToken)
+        {
+            //Forbind til databasen
+            await using var connection = new NpgsqlConnection(_connectionString);
+
+            //Åbn forbindelsen
+            await connection.OpenAsync(cancellationToken);
+
+            //Én query for hele listen:
+            //- me/mine: find brugerens participant og de chats, vedkommende er AKTIVT medlem af
+            //- participant_count: antal aktive medlemmer (bruges til at vise gruppe- eller person-ikon)
+            //- LEFT JOIN LATERAL: for HVER chat køres underqueryen, som finder den nyeste besked (LIMIT 1).
+            //  LATERAL betyder, at underqueryen må bruge c.id fra rækken udenfor.
+            //  LEFT ... ON true: chatten kommer med, selvom den ikke har nogen beskeder (så er lm-kolonnerne null).
+            //- sortering: nyeste besked først; uden beskeder bruges tidspunktet, hvor brugeren blev medlem
+            IEnumerable<ChatSummaryRow> rows = await connection.QueryAsync<ChatSummaryRow>(new CommandDefinition(
+                @"SELECT c.id,
+                         c.name,
+                         (SELECT count(*)::int FROM participation x WHERE x.chat_id = c.id AND x.left_at IS NULL) AS participant_count,
+                         lm.content     AS last_message,
+                         lm.sender_name AS last_message_sender_name,
+                         lm.sent_at     AS last_message_at
+                  FROM participant me
+                  JOIN participation mine ON mine.participant_id = me.id AND mine.left_at IS NULL
+                  JOIN chat c ON c.id = mine.chat_id
+                  LEFT JOIN LATERAL (
+                      SELECT m.content, p.name AS sender_name, m.sent_at
+                      FROM message m
+                      JOIN participation sp ON sp.id = m.sender_id
+                      JOIN participant p ON p.id = sp.participant_id
+                      WHERE m.chat_id = c.id
+                      ORDER BY m.sent_at DESC
+                      LIMIT 1
+                  ) lm ON true
+                  WHERE me.user_id = @UserId
+                  ORDER BY COALESCE(lm.sent_at, mine.joined_at) DESC",
+                new { UserId = userId },
+                cancellationToken: cancellationToken));
+
+            return rows
+                .Select(row => new ChatSummaryDto(
+                    row.Id,
+                    row.Name,
+                    row.ParticipantCount,
+                    row.LastMessage,
+                    row.LastMessageSenderName,
+                    row.LastMessageAt is null ? null : new DateTimeOffset(row.LastMessageAt.Value)))
+                .ToList();
+        }
     }
 }

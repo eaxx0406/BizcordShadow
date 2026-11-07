@@ -19,6 +19,28 @@ namespace Bizcord.Services
             _http = http;
         }
 
+        // GET api/chats?userId=... -> GatewayAPI (Ocelot) -> ChatService. Brugerens chats, nyeste aktivitet først.
+        public async Task<GatewayResult<IReadOnlyList<ChatSummaryDto>>> GetMyChatsAsync(Guid userId, CancellationToken ct = default)
+        {
+            try
+            {
+                using var response = await _http.GetAsync($"api/chats?userId={userId}", ct);
+                if (!response.IsSuccessStatusCode)
+                {
+                    return GatewayResult<IReadOnlyList<ChatSummaryDto>>.Fail(await ReadErrorAsync(response, ct));
+                }
+
+                var chats = await response.Content.ReadFromJsonAsync<List<ChatSummaryDto>>(ct);
+                return chats is null
+                    ? GatewayResult<IReadOnlyList<ChatSummaryDto>>.Fail("ChatService svarede uden en liste.")
+                    : GatewayResult<IReadOnlyList<ChatSummaryDto>>.Ok(chats);
+            }
+            catch (HttpRequestException)
+            {
+                return GatewayResult<IReadOnlyList<ChatSummaryDto>>.Fail(ConnectionError);
+            }
+        }
+
         // POST api/chats -> GatewayAPI (Ocelot) -> ChatService
         public async Task<GatewayResult<ChatDto>> CreateChatAsync(CreateChatRequest request, CancellationToken ct = default)
         {
