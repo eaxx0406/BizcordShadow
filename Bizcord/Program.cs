@@ -4,7 +4,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddRazorPages();
 
 // Typed HttpClient til GatewayAPI (bruges af Create chat, når gatewayen er klar)
-builder.Services.AddHttpClient<BizcordShadow.Services.GatewayClient>(client =>
+builder.Services.AddHttpClient<Bizcord.Services.GatewayClient>(client =>
 {
     client.BaseAddress = new Uri(builder.Configuration["GatewayApi:BaseUrl"] ?? "http://localhost:5065/");
 });

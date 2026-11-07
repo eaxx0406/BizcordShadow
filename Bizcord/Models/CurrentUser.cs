@@ -1,4 +1,4 @@
-namespace BizcordShadow.Models
+namespace Bizcord.Models
 {
     // Hardcoded bruger indtil der findes login/UserService.
     public static class CurrentUser

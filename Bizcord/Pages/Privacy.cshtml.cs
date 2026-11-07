@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 
-namespace BizcordShadow.Pages
+namespace Bizcord.Pages
 {
     public class PrivacyModel : PageModel
     {
