@@ -1,10 +1,10 @@
 using System.Net.Http.Json;
+using ChatService.Contracts;
 
-namespace BizcordShadow.Services
+namespace Bizcord.Services
 {
-    public record CreateChatRequest(string Name, Guid CreatedByUserId);
-
     // Typed HttpClient mod GatewayAPI. BaseAddress kommer fra appsettings ("GatewayApi:BaseUrl").
+    // Request-typer kommer fra ChatService.Contracts (se ADR 0007), så frontend og ChatService altid er enige om formatet.
     public class GatewayClient
     {
         private readonly HttpClient _http;
@@ -14,7 +14,7 @@ namespace BizcordShadow.Services
             _http = http;
         }
 
-        // TODO: Tilpas route/payload når GatewayAPI har et create-chat endpoint.
+        // POST api/chats -> GatewayAPI (Ocelot) -> ChatService
         public async Task<bool> CreateChatAsync(CreateChatRequest request, CancellationToken ct = default)
         {
             var response = await _http.PostAsJsonAsync("api/chats", request, ct);

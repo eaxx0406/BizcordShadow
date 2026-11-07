@@ -1,9 +1,10 @@
-using BizcordShadow.Models;
-using BizcordShadow.Services;
+using Bizcord.Models;
+using Bizcord.Services;
+using ChatService.Contracts;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 
-namespace BizcordShadow.Pages
+namespace Bizcord.Pages
 {
     public class IndexModel : PageModel
     {

@@ -1,18 +1,20 @@
 ﻿namespace ChatService.DomainModel.Entities
 {
+    // Read model af en User fra UserService (source of truth) – se ADR 0003.
+    // 1:1 med User. Opdateres fra events fra UserService, ikke af ChatService selv.
     public class Participant
     {
-        public Guid Id { get; set; }
-        public string Name { get; set; } = string.Empty;
+        public Guid Id { get; private set; }
 
-        // Reference to User in another service
-        public Guid UserId { get; set; }
+        // Reference til User i UserService
+        public Guid UserId { get; private set; }
+        public string Name { get; private set; } = string.Empty;
 
-        // Relations
-        public ICollection<Participation> Participations { get; set; }
-            = new List<Participation>();
-
-        public ICollection<MessageReceipt> MessageReceipts { get; set; }
-            = new List<MessageReceipt>();
+        public Participant(Guid userId, string name)
+        {
+            Id = Guid.NewGuid();
+            UserId = userId;
+            Name = name;
+        }
     }
 }

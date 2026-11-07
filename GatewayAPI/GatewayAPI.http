@@ -1,6 +1,12 @@
 @GatewayAPI_HostAddress = http://localhost:5065
 
-GET {{GatewayAPI_HostAddress}}/weatherforecast/
-Accept: application/json
+# Create chat via gatewayen (Ocelot sender videre til ChatService på :5210)
+POST {{GatewayAPI_HostAddress}}/api/chats
+Content-Type: application/json
+
+{
+  "name": "Chat via gateway",
+  "createdByUserId": "11111111-1111-1111-1111-111111111111"
+}
 
 ###

@@ -15,35 +15,39 @@ namespace ChatService.Repositories
                 ?? throw new InvalidOperationException("Connection string 'ChatDb' mangler. Sæt den med dotnet user-secrets.");
         }
 
-        public async Task CreateAsync(Chat entity)
+        public async Task CreateAsync(Chat chat, CancellationToken cancellationToken)
         {
             //forbinde til databasen
             await using var connection = new NpgsqlConnection(_connectionString);
-            await connection.OpenAsync();
+            await connection.OpenAsync(cancellationToken);
 
             //start en new transaction
-            await using var transaction = await connection.BeginTransactionAsync();
+            await using var transaction = await connection.BeginTransactionAsync(cancellationToken);
 
             try
             {
                 //Indsæt ChatEntity i databasen
-                await connection.ExecuteAsync(
+                //(CommandDefinition er Dappers måde at få både transaction og cancellationToken med)
+                await connection.ExecuteAsync(new CommandDefinition(
                     "INSERT INTO chat (id, name) VALUES (@Id, @Name)",
-                    entity,
-                    transaction);
+                    chat,
+                    transaction,
+                    cancellationToken: cancellationToken));
 
                 //indsæt ParticipationEntity i databasen
-                await connection.ExecuteAsync(
+                await connection.ExecuteAsync(new CommandDefinition(
                     "INSERT INTO participation (id, chat_id, participant_id, joined_at) VALUES (@Id, @ChatId, @ParticipantId, @JoinedAt)",
-                    entity.Participations,
-                    transaction);
+                    chat.Participations,
+                    transaction,
+                    cancellationToken: cancellationToken));
 
                 //hvis alt går godt, commit transaction
-                await transaction.CommitAsync();
+                await transaction.CommitAsync(cancellationToken);
             }
             catch
             {
                 //hvis noget går galt, rollback transaction
+                //(uden cancellationToken: rollback skal gennemføres, også hvis requesten er afbrudt)
                 await transaction.RollbackAsync();
 
                 //kast fejlen videre, så handleren ved at chatten ikke blev oprettet

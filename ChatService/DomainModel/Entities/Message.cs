@@ -1,21 +1,24 @@
 ﻿namespace ChatService.DomainModel.Entities
 {
+    // Eget aggregate: refererer Chat og afsender med id'er, ikke objekter.
     public class Message
     {
-        public Guid Id { get; set; }
-        public string Content { get; set; } = string.Empty;
+        public Guid Id { get; private set; }
+        public Guid ChatId { get; private set; }
 
-        public Guid ChatId { get; set; }
-        public Chat Chat { get; set; } = null!;
+        // Afsender er en Participation (medlemskabet), ikke direkte en Participant
+        public Guid SenderId { get; private set; }
 
-        // Sender is a participation, not directly a participant
-        public Guid SenderId { get; set; }
-        public Participation Sender { get; set; } = null!;
+        public string Content { get; private set; } = string.Empty;
+        public DateTimeOffset SentAt { get; private set; }
 
-        public DateTimeOffset SentAt { get; set; }
-
-        // Delivery and read receipts
-        public ICollection<MessageReceipt> Receipts { get; set; }
-            = new List<MessageReceipt>();
+        public Message(Guid chatId, Guid senderId, string content)
+        {
+            Id = Guid.NewGuid();
+            ChatId = chatId;
+            SenderId = senderId;
+            Content = content;
+            SentAt = DateTimeOffset.UtcNow;
+        }
     }
 }

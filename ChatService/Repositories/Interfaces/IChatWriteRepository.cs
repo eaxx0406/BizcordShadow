@@ -1,0 +1,11 @@
+using ChatService.DomainModel.Entities;
+
+namespace ChatService.Repositories.Interfaces
+{
+    // ChatService ejer selv sine repository-interfaces (se ADR 0009).
+    public interface IChatWriteRepository
+    {
+        // Gemmer en ny chat inkl. dens participations i én transaktion.
+        Task CreateAsync(Chat chat, CancellationToken cancellationToken);
+    }
+}
