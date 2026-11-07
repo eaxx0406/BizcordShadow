@@ -8,18 +8,32 @@
         public Guid Id { get; private set; }
         public string Name { get; private set; } = string.Empty;
 
-        // Privat liste udefra kun læsbar: ingen kan kalde chat.Participations.Add(...) og omgå reglerne.
         private readonly List<Participation> _participations = new();
         public IReadOnlyCollection<Participation> Participations => _participations;
 
-        //konstruktor der laver en chat
+        private static int _maxParticipants = 50; 
+
         public Chat(string name)
         {
             Id = Guid.NewGuid();
             Name = name;
         }
 
-        public void AddParticipant(Guid participantId)
+        // Tom konstruktor, som kun Rehydrate må bruge (derfor private).
+        private Chat() { }
+
+        // Rehydrering: genopbygger en EKSISTERENDE chat ud fra data fra databasen.
+        // Laver ikke et nyt id – bruger det, der står i databasen. Bruges kun af repository'et.
+        public static Chat Rehydrate(Guid id, string name, IEnumerable<Participation> participations)
+        {
+            Chat chat = new Chat();
+            chat.Id = id;
+            chat.Name = name;
+            chat._participations.AddRange(participations);
+            return chat;
+        }
+
+        public Participation AddParticipant(Guid participantId)
         {
             // Regel: kun ét aktivt medlemskab per participant (samme regel som ux_participation_active i databasen)
             if (_participations.Any(p => p.ParticipantId == participantId && p.LeftAt is null))
@@ -27,7 +41,15 @@
                 throw new InvalidOperationException("Participant er allerede med i chatten.");
             }
 
-            _participations.Add(new Participation(Id, participantId));
+            //regel: Der er et maximum antal deltagere i en chat (se ADR 0010)
+            if (_participations.Count >= _maxParticipants)
+            {
+                throw new InvalidOperationException("Chatten har nået maksimalt antal deltagere.");
+            }
+            
+            Participation participation = new Participation(Id, participantId);
+            _participations.Add(participation);
+            return participation;
         }
     }
 }

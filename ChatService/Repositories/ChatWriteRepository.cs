@@ -54,5 +54,19 @@ namespace ChatService.Repositories
                 throw;
             }
         }
+
+        public async Task AddParticipationAsync(Participation participation, CancellationToken cancellationToken)
+        {
+            //forbinde til databasen
+            await using var connection = new NpgsqlConnection(_connectionString);
+            await connection.OpenAsync(cancellationToken);
+
+            //indsæt den nye ParticipationEntity i databasen
+            //(ingen transaction: det er kun én INSERT, og én SQL-sætning er altid alt-eller-intet)
+            await connection.ExecuteAsync(new CommandDefinition(
+                "INSERT INTO participation (id, chat_id, participant_id, joined_at) VALUES (@Id, @ChatId, @ParticipantId, @JoinedAt)",
+                participation,
+                cancellationToken: cancellationToken));
+        }
     }
 }

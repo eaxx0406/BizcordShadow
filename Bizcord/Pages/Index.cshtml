@@ -1,19 +1,52 @@
 @page
 @model IndexModel
+@using Bizcord.Models
 @{
     ViewData["Title"] = "Forside";
 }
 
-<div class="text-center mt-5">
-    <h1 class="display-5">Velkommen, @Model.UserName</h1>
-    <p class="text-muted">Bruger-id: @Model.UserId</p>
-
-    <form method="post" asp-page-handler="CreateChat">
-        <button type="submit" class="btn btn-primary btn-lg">Create chat</button>
-    </form>
+<div class="mx-auto mt-4" style="max-width: 640px;">
+    <h1 class="display-6">Velkommen, @Model.UserName</h1>
+    <p class="text-muted small">Bruger-id: @Model.UserId</p>
 
     @if (Model.StatusMessage is not null)
     {
-        <div class="alert alert-info mt-4 d-inline-block">@Model.StatusMessage</div>
+        <div class="alert @(Model.IsError ? "alert-danger" : "alert-success")" role="alert">@Model.StatusMessage</div>
     }
+
+    <div class="card mb-3">
+        <div class="card-body">
+            <h2 class="h5 card-title">1. Opret chat</h2>
+            <form method="post" asp-page-handler="CreateChat" class="d-flex gap-2">
+                <input asp-for="NewChatName" class="form-control" placeholder="Navn på chat" aria-label="Navn på chat" />
+                <button type="submit" class="btn btn-primary text-nowrap">Opret chat</button>
+            </form>
+            <div class="form-text">Lad navnet være tomt for at teste validering.</div>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-body">
+            <h2 class="h5 card-title">2. Tilføj deltager</h2>
+            <form method="post" asp-page-handler="AddParticipant">
+                <input type="hidden" asp-for="ChatName" />
+                <input type="hidden" asp-for="NewChatName" />
+
+                <div class="mb-2">
+                    <label asp-for="ChatId" class="form-label">
+                        Chat @if (Model.ChatName is not null) { <span class="text-muted">(@Model.ChatName)</span> }
+                    </label>
+                    <input asp-for="ChatId" class="form-control font-monospace" placeholder="Opret en chat eller indsæt et chat-id" />
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="NewParticipantUserId" class="form-label">Bruger</label>
+                    <select asp-for="NewParticipantUserId" class="form-select"
+                            asp-items="@(new SelectList(Model.OtherUsers, nameof(TestUser.Id), nameof(TestUser.Name)))"></select>
+                </div>
+
+                <button type="submit" class="btn btn-primary">Tilføj deltager</button>
+            </form>
+        </div>
+    </div>
 </div>

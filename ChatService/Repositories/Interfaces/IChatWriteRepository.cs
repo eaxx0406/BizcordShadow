@@ -7,5 +7,8 @@ namespace ChatService.Repositories.Interfaces
     {
         // Gemmer en ny chat inkl. dens participations i én transaktion.
         Task CreateAsync(Chat chat, CancellationToken cancellationToken);
+
+        // Gemmer KUN én ny participation i en eksisterende chat (se ADR 0010).
+        Task AddParticipationAsync(Participation participation, CancellationToken cancellationToken);
     }
 }
