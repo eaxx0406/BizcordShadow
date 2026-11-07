@@ -1,0 +1,8 @@
+# Docker bygger fra roden af repoet. Alt her sendes IKKE med til docker build (hurtigere og ingen lokale build-filer).
+**/bin/
+**/obj/
+**/.vs/
+**/*.user
+.git/
+docs/
+**/tests/

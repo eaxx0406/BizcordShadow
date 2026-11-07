@@ -26,6 +26,7 @@ Her dokumenterer vi de vigtige arkitekturbeslutninger i Bizcord: hvad vi valgte,
 | [0013](0013-adgang-til-chats-og-mindst-mulig-information.md) | Kun medlemmer har adgang til en chat – og fejl afslører mindst muligt | Accepteret |
 | [0014](0014-beskeder-hentes-med-keyset-paging.md) | Beskeder hentes i sider med keyset paging | Accepteret |
 | [0015](0015-rest-api-frem-for-graphql-og-grpc.md) | REST (JSON over HTTP) frem for GraphQL og gRPC | Accepteret |
+| [0016](0016-apps-struktur-og-dockerfile-per-app.md) | apps/-struktur med Dockerfile per app | Accepteret |
 
 ## Skabelon
 

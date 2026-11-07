@@ -1,5 +1,5 @@
 -- Testdata indtil UserService findes og kan levere participants (read model) via events.
--- Matcher de hardcodede brugere i Bizcord/Models/CurrentUser.cs og Bizcord/Models/TestUsers.cs.
+-- Matcher de hardcodede brugere i apps/web/src/Bizcord/Models/TestUsers.cs.
 -- id (participant) er med vilje FORSKELLIG fra user_id, så det kan ses, at oversættelsen user-id -> participant-id virker.
 -- "Ukendt bruger" (9999...) er med vilje IKKE med, så fejlen "bruger findes ikke" kan testes.
 insert into participant (id, user_id, name)
