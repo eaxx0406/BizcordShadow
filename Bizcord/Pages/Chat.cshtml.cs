@@ -36,8 +36,14 @@ namespace Bizcord.Pages
         // Den åbne chat med medlemmer, hentet gennem gatewayen (GET api/chats/{id})
         public ChatDetailsDto? OpenChat { get; private set; }
 
-        // Fejl, hvis den åbne chat ikke kunne hentes (f.eks. 404)
+        // Fejl, hvis den åbne chat ikke kunne hentes (f.eks. 403)
         public string? OpenChatError { get; private set; }
+
+        // De nyeste beskeder i den åbne chat (ADR 0014). Ældre hentes med "Vis ældre beskeder" (OnGetOlderMessages).
+        public MessageList? Messages { get; private set; }
+
+        // Fejl, hvis beskederne ikke kunne hentes (chatten vises alligevel)
+        public string? MessagesError { get; private set; }
 
         // Besked fra forrige request (f.eks. "Chat oprettet"), overlever redirect via TempData
         [TempData]
@@ -74,6 +80,24 @@ namespace Bizcord.Pages
         public async Task OnGet()
         {
             await LoadPageAsync();
+        }
+
+        // GET /Chat/{id}?handler=OlderMessages&before=... : én side ældre beskeder som HTML.
+        // Kaldes fra JavaScript, når man trykker "Vis ældre beskeder", og indsættes øverst i listen.
+        public async Task<IActionResult> OnGetOlderMessages(Guid before)
+        {
+            if (OpenChatId is null)
+            {
+                return BadRequest();
+            }
+
+            var result = await _gateway.GetMessagesAsync(OpenChatId.Value, _currentUser.Id, before);
+            if (!result.IsSuccess)
+            {
+                return new ContentResult { StatusCode = StatusCodes.Status502BadGateway, Content = result.Error, ContentType = "text/plain; charset=utf-8" };
+            }
+
+            return Partial("_ChatMessages", new MessageList(result.Value!.Messages, result.Value.HasOlder, _currentUser.Id));
         }
 
         public async Task<IActionResult> OnPostCreateChat()
@@ -187,7 +211,7 @@ namespace Bizcord.Pages
                 return;
             }
 
-            var result = await _gateway.GetChatAsync(OpenChatId.Value);
+            var result = await _gateway.GetChatAsync(OpenChatId.Value, _currentUser.Id);
             if (!result.IsSuccess)
             {
                 OpenChatError = result.Error;
@@ -195,6 +219,17 @@ namespace Bizcord.Pages
             }
 
             OpenChat = result.Value;
+
+            // De nyeste beskeder (standard 30, ADR 0014)
+            var messages = await _gateway.GetMessagesAsync(OpenChatId.Value, _currentUser.Id);
+            if (messages.IsSuccess)
+            {
+                Messages = new MessageList(messages.Value!.Messages, messages.Value.HasOlder, _currentUser.Id);
+            }
+            else
+            {
+                MessagesError = messages.Error;
+            }
 
             // Kun hvis brugeren ikke selv har postet et andet chat-id
             if (ChatId is null)

@@ -478,11 +478,14 @@ body {
 .member-option .form-check-input { margin: 0; flex: none; }
 .member-option .chat-avatar { width: 2.4rem; height: 2.4rem; font-size: 1.1rem; }
 
-/* ===== Åben chat: beskeder (kommer senere), medlemmer og skrivefelt ===== */
+/* ===== Åben chat: beskeder, medlemmer og skrivefelt ===== */
 .chat-room {
   display: flex;
   flex-direction: column;
   min-width: 0;
+  /* Fast højde, så beskederne scroller inde i chatten i stedet for at gøre siden lang */
+  height: calc(100vh - 128px - 5rem);
+  min-height: 420px;
   background: rgba(26, 29, 59, .7);
   border: 1px solid rgba(255, 255, 255, .08);
   border-radius: 18px;
@@ -503,15 +506,19 @@ body {
   flex: 1;
   display: grid;
   grid-template-columns: 1fr 240px;
+  grid-template-rows: minmax(0, 1fr);
   min-height: 0;
 }
 
 .chat-messages {
-  display: grid;
-  place-items: center;
-  padding: 2rem 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: .6rem;
+  padding: 1.25rem;
+  overflow-y: auto;
 }
 .chat-messages-empty {
+  margin: auto;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -521,6 +528,25 @@ body {
 }
 .chat-messages-empty i { font-size: 3rem; color: #b9a8ff; margin-bottom: .4rem; }
 .chat-messages-empty strong { color: var(--bz-text); font-size: 1.2rem; font-weight: 600; }
+
+/* Én besked: andres til venstre med navn, egne til højre i lilla */
+.msg { display: flex; flex-direction: column; align-items: flex-start; max-width: 75%; }
+.msg-mine { align-self: flex-end; align-items: flex-end; }
+.msg-sender { font-size: .8rem; color: var(--bz-text-muted); margin: 0 0 .15rem .75rem; }
+.msg-bubble {
+  padding: .55rem .9rem;
+  border-radius: 16px 16px 16px 4px;
+  background: #2a2b5c;
+  white-space: pre-wrap;      /* behold linjeskift */
+  overflow-wrap: anywhere;    /* lange ord/links bryder i stedet for at skubbe layoutet */
+}
+.msg-mine .msg-bubble {
+  border-radius: 16px 16px 4px 16px;
+  background: linear-gradient(135deg, #8a6bff, var(--bz-primary));
+  color: #fff;
+}
+.msg-time { font-size: .72rem; color: var(--bz-text-muted); margin: .15rem .5rem 0; }
+.msg-load-older { align-self: center; margin-bottom: .5rem; border-radius: 999px; }
 
 .chat-members {
   padding: 1.25rem 1rem;
@@ -548,7 +574,7 @@ body {
 @media (max-width: 1100px) {
   .chat-layout { grid-template-columns: 1fr; margin: 0; }
   .chat-actions { grid-template-columns: 1fr; }
-  .chat-room-body { grid-template-columns: 1fr; }
+  .chat-room-body { grid-template-columns: 1fr; grid-template-rows: minmax(0, 1fr) auto; }
   .chat-members { border-left: 0; border-top: 1px solid rgba(255, 255, 255, .08); }
 }
 
