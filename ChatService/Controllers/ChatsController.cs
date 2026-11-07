@@ -76,17 +76,19 @@ namespace ChatService.Controllers
             return Ok();
         }
 
-        // GET api/chats/{id}
+        // GET api/chats/{id}?userId=...
+        // Kun medlemmer må se chatten, ellers 403 (ADR 0013). userId sendes af klienten, indtil der findes login.
         [HttpGet("{id:guid}")]
-        public async Task<ActionResult<ChatDetailsDto>> GetById(Guid id, CancellationToken cancellationToken)
+        public async Task<ActionResult<ChatDetailsDto>> GetById(Guid id, [FromQuery] Guid userId, CancellationToken cancellationToken)
         {
-            //MediatR will handle the query and return the chat, or null if it does not exist
-            ChatDetailsDto? chat = await _mediator.Send(new GetChatByIdQuery(id), cancellationToken);
-
-            if (chat is null)
+            // Validate the request
+            if (userId == Guid.Empty)
             {
-                return NotFound();
+                return BadRequest("User ID cannot be empty.");
             }
+
+            //MediatR will handle the query and return the chat (ForbiddenException -> 403 if the user is not a member)
+            ChatDetailsDto chat = await _mediator.Send(new GetChatByIdQuery(id, userId), cancellationToken);
 
             return Ok(chat);
         }

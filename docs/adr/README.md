@@ -24,6 +24,8 @@ Her dokumenterer vi de vigtige arkitekturbeslutninger i Bizcord: hvad vi valgte,
 | [0011](0011-fejlhaandtering-med-problemdetails.md) | Fejlhåndtering med domæne-exceptions og ProblemDetails | Accepteret |
 | [0012](0012-chat-oprettes-med-medlemmer.md) | En chat oprettes med medlemmer i ét kald | Accepteret |
 | [0013](0013-adgang-til-chats-og-mindst-mulig-information.md) | Kun medlemmer har adgang til en chat – og fejl afslører mindst muligt | Accepteret |
+| [0014](0014-beskeder-hentes-med-keyset-paging.md) | Beskeder hentes i sider med keyset paging | Accepteret |
+| [0015](0015-rest-api-frem-for-graphql-og-grpc.md) | REST (JSON over HTTP) frem for GraphQL og gRPC | Accepteret |
 
 ## Skabelon
 
