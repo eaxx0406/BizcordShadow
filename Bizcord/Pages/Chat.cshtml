@@ -6,48 +6,151 @@
     ViewData["ActiveNav"] = "Chat";
 }
 
-<div class="mx-auto mt-4" style="max-width: 640px;">
-    <h1 class="display-6">Velkommen, @Model.UserName</h1>
-    <p class="text-muted small">Bruger-id: @Model.UserId</p>
-
-    @if (Model.StatusMessage is not null)
-    {
-        <div class="alert @(Model.IsError ? "alert-danger" : "alert-success")" role="alert">@Model.StatusMessage</div>
-    }
-
-    <div class="card mb-3">
-        <div class="card-body">
-            <h2 class="h5 card-title">1. Opret chat</h2>
-            <form method="post" asp-page-handler="CreateChat" class="d-flex gap-2">
-                <input asp-for="NewChatName" class="form-control" placeholder="Navn på chat" aria-label="Navn på chat" />
-                <button type="submit" class="btn btn-primary text-nowrap">Opret chat</button>
-            </form>
-            <div class="form-text">Lad navnet være tomt for at teste validering.</div>
+<div class="chat-layout">
+    <!-- Venstre: chatliste (dummydata indtil backend kan levere den) -->
+    <section class="chat-panel" aria-label="Chats">
+        <div class="chat-panel-head">
+            <h1>Chats</h1>
+            <button type="button" class="btn bz-btn-primary" data-bs-toggle="modal" data-bs-target="#newChatModal">
+                <i class="bi bi-plus-lg" aria-hidden="true"></i> Ny chat
+            </button>
         </div>
-    </div>
 
-    <div class="card">
-        <div class="card-body">
-            <h2 class="h5 card-title">2. Tilføj deltager</h2>
-            <form method="post" asp-page-handler="AddParticipant">
-                <input type="hidden" asp-for="ChatName" />
-                <input type="hidden" asp-for="NewChatName" />
+        <label class="chat-search">
+            <i class="bi bi-search" aria-hidden="true"></i>
+            <input id="chatSearch" type="search" placeholder="Søg i chats …" aria-label="Søg i chats" autocomplete="off" />
+        </label>
 
-                <div class="mb-2">
-                    <label asp-for="ChatId" class="form-label">
-                        Chat @if (Model.ChatName is not null) { <span class="text-muted">(@Model.ChatName)</span> }
-                    </label>
-                    <input asp-for="ChatId" class="form-control font-monospace" placeholder="Opret en chat eller indsæt et chat-id" />
-                </div>
+        <ul class="chat-list" id="chatList">
+            @for (var i = 0; i < Model.Chats.Count; i++)
+            {
+                var chat = Model.Chats[i];
+                <li>
+                    <a href="#" class="chat-item @(i == 0 ? "active" : "")" data-name="@chat.Name.ToLowerInvariant()">
+                        <span class="chat-avatar"><i class="bi @(chat.IsGroup ? "bi-people" : "bi-person")" aria-hidden="true"></i></span>
+                        <span class="chat-item-body">
+                            <span class="chat-item-top">
+                                <strong>@chat.Name</strong>
+                                <small>@chat.Time</small>
+                            </span>
+                            <span class="chat-item-bottom">
+                                <span class="chat-last">@chat.LastMessage</span>
+                                @if (chat.Unread > 0)
+                                {
+                                    <span class="bz-badge" aria-label="@chat.Unread ulæst">@chat.Unread</span>
+                                }
+                            </span>
+                        </span>
+                    </a>
+                </li>
+            }
+        </ul>
+        <p class="chat-empty" id="chatEmpty" hidden>Ingen chats matcher søgningen.</p>
+    </section>
 
-                <div class="mb-3">
-                    <label asp-for="NewParticipantUserId" class="form-label">Bruger</label>
-                    <select asp-for="NewParticipantUserId" class="form-select"
-                            asp-items="@(new SelectList(Model.OtherUsers, nameof(TestUser.Id), nameof(TestUser.Name)))"></select>
-                </div>
+    <!-- Højre: velkomst og handlinger -->
+    <section class="chat-welcome">
+        <img class="chat-hero" src="~/img/mascot-laptop.png" alt="Bizcord-maskotten sidder glad ved sin computer" />
 
-                <button type="submit" class="btn btn-primary">Tilføj deltager</button>
-            </form>
+        <h2 class="welcome-title">Dine samtaler</h2>
+        <p class="welcome-text">
+            Her kan du se alle dine chats, starte en ny samtale<br />
+            eller genoptage en eksisterende.
+        </p>
+
+        <div class="chat-actions">
+            <button type="button" class="bz-card-action bz-card-primary" data-bs-toggle="modal" data-bs-target="#newChatModal">
+                <i class="bi bi-chat-dots" aria-hidden="true"></i>
+                <strong>Start en ny chat</strong>
+                <small>Opret en privat samtale med en ven</small>
+            </button>
+            <button type="button" class="bz-card-action" data-bs-toggle="modal" data-bs-target="#newChatModal">
+                <i class="bi bi-person-plus" aria-hidden="true"></i>
+                <strong>Opret gruppechat</strong>
+                <small>Saml flere i én samtale</small>
+            </button>
+            <button type="button" class="bz-card-action" title="Kommer, når der er en UserService">
+                <i class="bi bi-people" aria-hidden="true"></i>
+                <strong>Find venner</strong>
+                <small>Søg efter brugere på Bizcord</small>
+            </button>
+        </div>
+    </section>
+</div>
+
+@section Modals {
+<!-- Testformularerne: opret chat og tilføj deltager (kalder ChatService via gatewayen) -->
+<div class="modal fade" id="newChatModal" tabindex="-1" aria-labelledby="newChatTitle" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content bz-modal">
+            <div class="modal-header">
+                <h2 class="modal-title h5" id="newChatTitle">Ny chat</h2>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Luk"></button>
+            </div>
+            <div class="modal-body">
+                <p class="text-muted small mb-3">Logget ind som @Model.UserName (@Model.UserId)</p>
+
+                @if (Model.StatusMessage is not null)
+                {
+                    <div class="alert @(Model.IsError ? "alert-danger" : "alert-success")" role="alert">@Model.StatusMessage</div>
+                }
+
+                <h3 class="h6">1. Opret chat</h3>
+                <form method="post" asp-page-handler="CreateChat" class="d-flex gap-2">
+                    <input asp-for="NewChatName" class="form-control" placeholder="Navn på chat" aria-label="Navn på chat" />
+                    <button type="submit" class="btn btn-primary text-nowrap">Opret chat</button>
+                </form>
+                <div class="form-text mb-4">Lad navnet være tomt for at teste validering.</div>
+
+                <h3 class="h6">2. Tilføj deltager</h3>
+                <form method="post" asp-page-handler="AddParticipant">
+                    <input type="hidden" asp-for="ChatName" />
+                    <input type="hidden" asp-for="NewChatName" />
+
+                    <div class="mb-2">
+                        <label asp-for="ChatId" class="form-label">
+                            Chat @if (Model.ChatName is not null) { <span class="text-muted">(@Model.ChatName)</span> }
+                        </label>
+                        <input asp-for="ChatId" class="form-control font-monospace" placeholder="Opret en chat eller indsæt et chat-id" />
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="NewParticipantUserId" class="form-label">Bruger</label>
+                        <select asp-for="NewParticipantUserId" class="form-select"
+                                asp-items="@(new SelectList(Model.OtherUsers, nameof(TestUser.Id), nameof(TestUser.Name)))"></select>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary">Tilføj deltager</button>
+                </form>
+            </div>
         </div>
     </div>
 </div>
+}
+
+@section Scripts {
+    <script>
+        // Søgning i chatlisten (kun på navn, i browseren)
+        (function () {
+            const input = document.getElementById('chatSearch');
+            const items = document.querySelectorAll('#chatList li');
+            const empty = document.getElementById('chatEmpty');
+            input.addEventListener('input', () => {
+                const q = input.value.trim().toLowerCase();
+                let shown = 0;
+                items.forEach(li => {
+                    const match = li.firstElementChild.dataset.name.includes(q);
+                    li.hidden = !match;
+                    if (match) shown++;
+                });
+                empty.hidden = shown > 0;
+            });
+        })();
+
+        // Efter et POST (opret chat / tilføj deltager) åbnes formularen igen, så resultatet kan ses
+        @if (Model.StatusMessage is not null)
+        {
+            <text>new bootstrap.Modal('#newChatModal').show();</text>
+        }
+    </script>
+}

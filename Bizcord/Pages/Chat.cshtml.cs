@@ -18,6 +18,9 @@ namespace Bizcord.Pages
         public string UserName => CurrentUser.Name;
         public Guid UserId => CurrentUser.Id;
 
+        // Chatlisten i venstre side. Dummydata, indtil ChatService kan returnere "mine chats".
+        public IReadOnlyList<ChatPreview> Chats => DummyChats.All;
+
         // Brugere, der kan tilføjes (alle testbrugere undtagen en selv)
         public IReadOnlyList<TestUser> OtherUsers => TestUsers.All.Where(u => u.Id != CurrentUser.Id).ToList();
 
