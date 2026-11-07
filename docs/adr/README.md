@@ -23,6 +23,7 @@ Her dokumenterer vi de vigtige arkitekturbeslutninger i Bizcord: hvad vi valgte,
 | [0010](0010-chat-styrer-deltagelse.md) | Chat-aggregatet styrer deltagelse – maks 50 deltagere | Accepteret |
 | [0011](0011-fejlhaandtering-med-problemdetails.md) | Fejlhåndtering med domæne-exceptions og ProblemDetails | Accepteret |
 | [0012](0012-chat-oprettes-med-medlemmer.md) | En chat oprettes med medlemmer i ét kald | Accepteret |
+| [0013](0013-adgang-til-chats-og-mindst-mulig-information.md) | Kun medlemmer har adgang til en chat – og fejl afslører mindst muligt | Accepteret |
 
 ## Skabelon
 
