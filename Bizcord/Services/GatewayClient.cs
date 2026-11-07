@@ -85,6 +85,22 @@ namespace Bizcord.Services
             }
         }
 
+        // POST api/chats/{chatId}/messages -> GatewayAPI (Ocelot) -> ChatService
+        public async Task<GatewayResult> SendMessageAsync(Guid chatId, SendMessageRequest request, CancellationToken ct = default)
+        {
+            try
+            {
+                using var response = await _http.PostAsJsonAsync($"api/chats/{chatId}/messages", request, ct);
+                return response.IsSuccessStatusCode
+                    ? GatewayResult.Ok()
+                    : GatewayResult.Fail(await ReadErrorAsync(response, ct));
+            }
+            catch (HttpRequestException)
+            {
+                return GatewayResult.Fail(ConnectionError);
+            }
+        }
+
         // POST api/chats/{chatId}/participants -> GatewayAPI (Ocelot) -> ChatService (ADR 0010)
         public async Task<GatewayResult> AddParticipantAsync(Guid chatId, Guid userId, CancellationToken ct = default)
         {

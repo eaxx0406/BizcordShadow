@@ -114,10 +114,17 @@
                 </aside>
             </div>
 
-            <!-- Skrivefelt: kun udseende, beskeder er ikke implementeret endnu -->
-            <form class="chat-composer" onsubmit="return false;">
-                <input type="text" class="form-control" placeholder="Beskeder kommer snart …" aria-label="Skriv en besked" disabled />
-                <button type="submit" class="btn bz-btn-primary" disabled aria-label="Send">
+            @if (Model.OpenDialog == "message" && Model.StatusMessage is not null)
+            {
+                <div class="alert alert-danger mx-3 mb-0" role="alert">@Model.StatusMessage</div>
+            }
+
+            <!-- Skrivefelt: sendknappen er først aktiv, når der står andet end mellemrum ("." er fint) -->
+            <form class="chat-composer" method="post" asp-page-handler="SendMessage">
+                <input asp-for="NewMessage" id="newMessage" class="form-control" placeholder="Skriv en besked …"
+                       aria-label="Skriv en besked" autocomplete="off" autofocus />
+                <button type="submit" id="sendMessage" class="btn bz-btn-primary" aria-label="Send"
+                        disabled="@string.IsNullOrWhiteSpace(Model.NewMessage)" data-loading-text="Sender …">
                     <i class="bi bi-send" aria-hidden="true"></i>
                 </button>
             </form>
@@ -253,6 +260,16 @@
 
 @section Scripts {
     <script>
+        // Sendknappen er kun aktiv, når beskeden indeholder andet end mellemrum
+        (function () {
+            const input = document.getElementById('newMessage');
+            const send = document.getElementById('sendMessage');
+            if (!input || !send) return;
+            const update = () => { send.disabled = input.value.trim() === ''; };
+            input.addEventListener('input', update);
+            update();
+        })();
+
         // Søgning i chatlisten (kun på navn, i browseren)
         (function () {
             const input = document.getElementById('chatSearch');
