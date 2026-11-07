@@ -20,6 +20,12 @@ builder.Services.AddScoped<IChatReadRepository, ChatReadRepository>();
 // Register the IParticipantReadRepository implementation with the DI container
 builder.Services.AddScoped<IParticipantReadRepository, ParticipantReadRepository>();
 
+// Register the IParticipationReadRepository implementation with the DI container
+builder.Services.AddScoped<IParticipationReadRepository, ParticipationReadRepository>();
+
+// Register the IMessageWriteRepository implementation with the DI container
+builder.Services.AddScoped<IMessageWriteRepository, MessageWriteRepository>();
+
 // Dapper: map snake_case-kolonner (chat_id) til PascalCase-properties (ChatId), når der LÆSES fra databasen (se ADR 0006).
 Dapper.DefaultTypeMap.MatchNamesWithUnderscores = true;
 

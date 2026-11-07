@@ -23,3 +23,14 @@ GET {{ChatService_HostAddress}}/api/chats/00000000-0000-0000-0000-000000000000
 GET {{ChatService_HostAddress}}/api/chats?userId=11111111-1111-1111-1111-111111111111
 
 ###
+
+# Send en besked (indsæt et chat-id, hvor afsenderen er medlem)
+POST {{ChatService_HostAddress}}/api/chats/00000000-0000-0000-0000-000000000000/messages
+Content-Type: application/json
+
+{
+  "senderUserId": "11111111-1111-1111-1111-111111111111",
+  "content": "Hej med jer!"
+}
+
+###
