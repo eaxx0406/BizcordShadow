@@ -1,5 +1,6 @@
 ﻿using MediatR;
 using ChatService.DomainModel.Entities;
+using ChatService.DomainModel.Exceptions;
 using ChatService.Repositories.Interfaces;
 
 namespace ChatService.ServiceLayer.CreateChat
@@ -39,7 +40,7 @@ namespace ChatService.ServiceLayer.CreateChat
             Guid? participantId = await _participantReadRepository.GetIdByUserIdAsync(userId, cancellationToken);
             if (participantId == null)
             {
-                throw new Exception($"User with ID {userId} not found.");
+                throw new NotFoundException("En af brugerne findes ikke.");
             }
             return participantId.Value;
         }

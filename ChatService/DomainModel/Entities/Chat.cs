@@ -1,4 +1,6 @@
-﻿namespace ChatService.DomainModel.Entities
+﻿using ChatService.DomainModel.Exceptions;
+
+namespace ChatService.DomainModel.Entities
 {
     // Aggregate root: en Chat ejer sine Participations.
     // Ændringer i deltagere sker KUN gennem metoder på Chat, så reglerne altid håndhæves ét sted.
@@ -60,13 +62,13 @@
             // Regel: kun ét aktivt medlemskab per participant (samme regel som ux_participation_active i databasen)
             if (_participations.Any(p => p.ParticipantId == participantId && p.LeftAt is null))
             {
-                throw new InvalidOperationException("Participant er allerede med i chatten.");
+                throw new ConflictException("Participant er allerede med i chatten.");
             }
 
             //regel: Der er et maximum antal deltagere i en chat (se ADR 0010)
             if (_participations.Count >= _maxParticipants)
             {
-                throw new InvalidOperationException("Chatten har nået maksimalt antal deltagere.");
+                throw new ConflictException("Chatten har nået maksimalt antal deltagere.");
             }
             
             Participation participation = new Participation(Id, participantId);

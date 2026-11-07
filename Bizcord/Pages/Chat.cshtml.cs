@@ -61,10 +61,14 @@ namespace Bizcord.Pages
         [BindProperty]
         public Guid NewParticipantUserId { get; set; }
 
+        // Beskeden i skrivefeltet. Tom eller kun mellemrum sendes ikke ("." er fint).
+        [BindProperty]
+        public string? NewMessage { get; set; }
+
         public string? StatusMessage { get; private set; }
         public bool IsError { get; private set; }
 
-        // Hvilken dialog der skal åbnes igen efter et mislykket POST, så fejlen kan ses ("create" eller "add")
+        // Hvor fejlen fra et mislykket POST skal vises: dialogen "create" eller "add", eller skrivefeltet "message"
         public string? OpenDialog { get; private set; }
 
         public async Task OnGet()
@@ -122,6 +126,38 @@ namespace Bizcord.Pages
             // Succes: vis chatten, så den nye deltager kan ses i medlemslisten
             FlashMessage = $"{name} er tilføjet til chatten.";
             return RedirectToPage("/Chat", new { id = ChatId });
+        }
+
+        public async Task<IActionResult> OnPostSendMessage()
+        {
+            OpenDialog = "message";
+
+            if (OpenChatId is null)
+            {
+                return RedirectToPage("/Chat");
+            }
+
+            // Sendknappen er slået fra, når feltet er tomt, men tjek alligevel (JavaScript kan være slået fra)
+            if (string.IsNullOrWhiteSpace(NewMessage))
+            {
+                SetError("Beskeden er tom.");
+                await LoadPageAsync();
+                return Page();
+            }
+
+            var result = await _gateway.SendMessageAsync(OpenChatId.Value, new SendMessageRequest(_currentUser.Id, NewMessage));
+
+            if (!result.IsSuccess)
+            {
+                // Beholder teksten i feltet, så den ikke går tabt
+                SetError($"Kunne ikke sende beskeden. {result.Error}");
+                await LoadPageAsync();
+                return Page();
+            }
+
+            // Succes: tilbage til chatten med et tomt skrivefelt (beskederne vises her, når GetMessages findes)
+            FlashMessage = "Beskeden er sendt.";
+            return RedirectToPage("/Chat", new { id = OpenChatId });
         }
 
         // Henter det, siden viser: chatlisten og (hvis der er en i URL'en) den åbne chat
