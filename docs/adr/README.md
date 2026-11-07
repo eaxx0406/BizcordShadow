@@ -20,6 +20,8 @@ Her dokumenterer vi de vigtige arkitekturbeslutninger i Bizcord: hvad vi valgte,
 | [0007](0007-contracts-projekt-per-service.md) | Contracts-projekt per service | Accepteret |
 | [0008](0008-lokal-infrastruktur-compose-og-user-secrets.md) | Lokal infrastruktur med docker compose og user-secrets | Accepteret |
 | [0009](0009-ingen-delt-domaenekode-mellem-services.md) | Ingen delt domænekode mellem services | Accepteret |
+| [0010](0010-chat-styrer-deltagelse.md) | Chat-aggregatet styrer deltagelse – maks 50 deltagere | Accepteret |
+| [0011](0011-fejlhaandtering-med-problemdetails.md) | Fejlhåndtering med domæne-exceptions og ProblemDetails | Accepteret |
 
 ## Skabelon
 
