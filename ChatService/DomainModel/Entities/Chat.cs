@@ -13,10 +13,32 @@
 
         private static int _maxParticipants = 50; 
 
-        public Chat(string name)
+        // Private: nye chats laves med Create, så de altid har medlemmer fra start.
+        private Chat(string name)
         {
             Id = Guid.NewGuid();
             Name = name;
+        }
+
+        // Opretter en ny chat med opretteren og mindst ét andet medlem (se ADR 0012).
+        // Medlemmerne tilføjes gennem AddParticipant, så de samme regler gælder som ved tilføjelse senere (ADR 0010).
+        public static Chat Create(string name, Guid creatorParticipantId, IEnumerable<Guid> memberParticipantIds)
+        {
+            Chat chat = new Chat(name);
+            chat.AddParticipant(creatorParticipantId);
+
+            foreach (Guid memberParticipantId in memberParticipantIds)
+            {
+                chat.AddParticipant(memberParticipantId);
+            }
+
+            // Regel: en chat kun med en selv giver ikke mening
+            if (chat._participations.Count < 2)
+            {
+                throw new InvalidOperationException("En chat skal have mindst ét medlem ud over opretteren.");
+            }
+
+            return chat;
         }
 
         // Tom konstruktor, som kun Rehydrate må bruge (derfor private).

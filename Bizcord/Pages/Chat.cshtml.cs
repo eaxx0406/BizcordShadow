@@ -24,11 +24,15 @@ namespace Bizcord.Pages
         // Brugere, der kan tilføjes (alle testbrugere undtagen en selv)
         public IReadOnlyList<TestUser> OtherUsers => TestUsers.All.Where(u => u.Id != CurrentUser.Id).ToList();
 
-        // Navn på den chat, der skal oprettes. Kan sættes tom for at teste validering.
+        // Ny chat: navn + medlemmer i ét trin (ADR 0012). Navnet kan sættes tomt for at teste validering i ChatService.
         [BindProperty]
-        public string NewChatName { get; set; } = "Ny chat";
+        public string NewChatName { get; set; } = string.Empty;
 
-        // Den chat, der tilføjes deltagere til. Udfyldes, når en chat oprettes, men kan også indsættes manuelt.
+        // De valgte medlemmer (user-id'er) ud over en selv
+        [BindProperty]
+        public List<Guid> NewChatMemberIds { get; set; } = new();
+
+        // Den chat, der tilføjes deltagere til senere. Udfyldes, når en chat oprettes, men kan også indsættes manuelt.
         [BindProperty]
         public Guid? ChatId { get; set; }
 
@@ -41,13 +45,25 @@ namespace Bizcord.Pages
         public string? StatusMessage { get; private set; }
         public bool IsError { get; private set; }
 
+        // Hvilken dialog der skal åbnes igen efter et POST, så resultatet kan ses ("create" eller "add")
+        public string? OpenDialog { get; private set; }
+
         public void OnGet()
         {
         }
 
         public async Task<IActionResult> OnPostCreateChat()
         {
-            var result = await _gateway.CreateChatAsync(new CreateChatRequest(NewChatName ?? string.Empty, CurrentUser.Id));
+            OpenDialog = "create";
+
+            if (NewChatMemberIds.Count == 0)
+            {
+                SetError("Vælg mindst ét medlem. En chat kun med dig selv er ikke så interessant.");
+                return Page();
+            }
+
+            var result = await _gateway.CreateChatAsync(
+                new CreateChatRequest(NewChatName ?? string.Empty, CurrentUser.Id, NewChatMemberIds));
 
             if (result.IsSuccess)
             {
@@ -58,7 +74,13 @@ namespace Bizcord.Pages
                 ModelState.Remove(nameof(ChatId));
                 ModelState.Remove(nameof(ChatName));
 
-                SetStatus($"Chat \"{ChatName}\" oprettet.");
+                var members = string.Join(", ", NewChatMemberIds.Select(TestUsers.NameOf));
+                SetStatus($"Chat \"{ChatName}\" oprettet med {members}.");
+
+                // Tøm formularen, så den er klar til en ny chat
+                NewChatName = string.Empty;
+                NewChatMemberIds.Clear();
+                ModelState.Remove(nameof(NewChatName));
             }
             else
             {
@@ -70,9 +92,11 @@ namespace Bizcord.Pages
 
         public async Task<IActionResult> OnPostAddParticipant()
         {
+            OpenDialog = "add";
+
             if (ChatId is null)
             {
-                SetError("Opret en chat først (eller indsæt et chat-id).");
+                SetError("Angiv hvilken chat (opret en chat først, eller indsæt et chat-id).");
                 return Page();
             }
 

@@ -22,6 +22,7 @@ Her dokumenterer vi de vigtige arkitekturbeslutninger i Bizcord: hvad vi valgte,
 | [0009](0009-ingen-delt-domaenekode-mellem-services.md) | Ingen delt domænekode mellem services | Accepteret |
 | [0010](0010-chat-styrer-deltagelse.md) | Chat-aggregatet styrer deltagelse – maks 50 deltagere | Accepteret |
 | [0011](0011-fejlhaandtering-med-problemdetails.md) | Fejlhåndtering med domæne-exceptions og ProblemDetails | Accepteret |
+| [0012](0012-chat-oprettes-med-medlemmer.md) | En chat oprettes med medlemmer i ét kald | Accepteret |
 
 ## Skabelon
 

@@ -3,5 +3,5 @@ using MediatR;
 
 namespace ChatService.ServiceLayer.CreateChat
 {
-    public record CreateChatCommand(string Name, Guid CreatedByUserId) : IRequest<Chat>;
+    public record CreateChatCommand(string Name, Guid CreatedByUserId, IReadOnlyList<Guid> ParticipantUserIds) : IRequest<Chat>;
 }
