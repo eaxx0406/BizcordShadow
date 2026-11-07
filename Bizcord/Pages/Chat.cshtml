@@ -88,12 +88,23 @@
             }
 
             <div class="chat-room-body">
-                <div class="chat-messages">
-                    <div class="chat-messages-empty">
-                        <i class="bi bi-chat-heart" aria-hidden="true"></i>
-                        <strong>Ingen beskeder endnu</strong>
-                        <small>Sig hej til @string.Join(", ", chat.Participants.Where(p => p.UserId != Model.UserId).Select(p => p.Name))!</small>
-                    </div>
+                <div class="chat-messages" id="chatMessages" aria-live="polite">
+                    @if (Model.MessagesError is not null)
+                    {
+                        <div class="alert alert-danger m-auto" role="alert">Kunne ikke hente beskederne. @Model.MessagesError</div>
+                    }
+                    else if (Model.Messages is null || Model.Messages.Messages.Count == 0)
+                    {
+                        <div class="chat-messages-empty">
+                            <i class="bi bi-chat-heart" aria-hidden="true"></i>
+                            <strong>Ingen beskeder endnu</strong>
+                            <small>Sig hej til @string.Join(", ", chat.Participants.Where(p => p.UserId != Model.UserId).Select(p => p.Name))!</small>
+                        </div>
+                    }
+                    else
+                    {
+                        <partial name="_ChatMessages" model="Model.Messages" />
+                    }
                 </div>
 
                 <aside class="chat-members" aria-labelledby="membersTitle">
@@ -268,6 +279,38 @@
             const update = () => { send.disabled = input.value.trim() === ''; };
             input.addEventListener('input', update);
             update();
+        })();
+
+        // Beskeder: start nederst (nyeste), og hent ældre beskeder, når man beder om det (ADR 0014)
+        (function () {
+            const list = document.getElementById('chatMessages');
+            if (!list) return;
+            list.scrollTop = list.scrollHeight;
+
+            list.addEventListener('click', async (event) => {
+                const button = event.target.closest('.msg-load-older');
+                if (!button) return;
+
+                button.disabled = true;
+                const url = new URL(window.location.href);
+                url.searchParams.set('handler', 'OlderMessages');
+                url.searchParams.set('before', button.dataset.before);
+
+                const response = await fetch(url);
+                const html = await response.text();
+                if (!response.ok) {
+                    button.disabled = false;
+                    button.textContent = 'Kunne ikke hente ældre beskeder. Prøv igen';
+                    button.title = html;
+                    return;
+                }
+
+                // Indsæt den nye side øverst i stedet for knappen, uden at det man kigger på hopper
+                const heightBefore = list.scrollHeight;
+                button.insertAdjacentHTML('afterend', html);
+                button.remove();
+                list.scrollTop += list.scrollHeight - heightBefore;
+            });
         })();
 
         // Søgning i chatlisten (kun på navn, i browseren)

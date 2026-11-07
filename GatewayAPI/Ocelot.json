@@ -39,9 +39,9 @@
       ]
     },
     {
-      // Send en besked i en chat
+      // Læs (GET, med ?userId=&before=&limit=) og send (POST) beskeder i en chat
       "UpstreamPathTemplate": "/api/chats/{chatId}/messages",
-      "UpstreamHttpMethod": [ "POST" ],
+      "UpstreamHttpMethod": [ "GET", "POST" ],
       "DownstreamPathTemplate": "/api/chats/{chatId}/messages",
       "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [

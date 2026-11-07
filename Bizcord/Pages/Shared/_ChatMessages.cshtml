@@ -1,0 +1,23 @@
+@model Bizcord.Models.MessageList
+@*
+    Én side beskeder (ældste først). Bruges både når chatten åbnes, og når "Vis ældre beskeder" henter en side mere.
+    Knappen husker id'et på den ældste besked; det er cursoren til næste side (ADR 0014).
+*@
+@if (Model.HasOlder && Model.Messages.Count > 0)
+{
+    <button type="button" class="btn btn-sm btn-outline-light msg-load-older" data-before="@Model.Messages[0].Id">
+        <i class="bi bi-arrow-up" aria-hidden="true"></i> Vis ældre beskeder
+    </button>
+}
+@foreach (var message in Model.Messages)
+{
+    var mine = message.SenderUserId == Model.CurrentUserId;
+    <div class="msg @(mine ? "msg-mine" : "")">
+        @if (!mine)
+        {
+            <span class="msg-sender">@message.SenderName</span>
+        }
+        <div class="msg-bubble">@message.Content</div>
+        <time class="msg-time" datetime="@message.SentAt.ToString("o")">@Bizcord.Models.MessageList.FormatTime(message.SentAt)</time>
+    </div>
+}

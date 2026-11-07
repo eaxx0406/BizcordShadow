@@ -63,25 +63,40 @@ namespace Bizcord.Services
             }
         }
 
-        // GET api/chats/{chatId} -> GatewayAPI (Ocelot) -> ChatService. Chatten med dens medlemmer.
-        public async Task<GatewayResult<ChatDetailsDto>> GetChatAsync(Guid chatId, CancellationToken ct = default)
+        // GET api/chats/{chatId}?userId=... -> GatewayAPI (Ocelot) -> ChatService. Chatten med dens medlemmer (kun for medlemmer).
+        public Task<GatewayResult<ChatDetailsDto>> GetChatAsync(Guid chatId, Guid userId, CancellationToken ct = default)
+            => GetJsonAsync<ChatDetailsDto>($"api/chats/{chatId}?userId={userId}", "ChatService svarede uden en chat.", ct);
+
+        // GET api/chats/{chatId}/messages?userId=...&before=...&limit=... -> én side beskeder, ældste først (ADR 0014)
+        public Task<GatewayResult<MessagePageDto>> GetMessagesAsync(Guid chatId, Guid userId, Guid? before = null, int limit = 30, CancellationToken ct = default)
+        {
+            var url = $"api/chats/{chatId}/messages?userId={userId}&limit={limit}";
+            if (before is not null)
+            {
+                url += $"&before={before}";
+            }
+            return GetJsonAsync<MessagePageDto>(url, "ChatService svarede uden beskeder.", ct);
+        }
+
+        // Fælles for GET-kald, der returnerer JSON: succes med værdien, eller en læsbar fejl
+        private async Task<GatewayResult<T>> GetJsonAsync<T>(string url, string emptyError, CancellationToken ct)
         {
             try
             {
-                using var response = await _http.GetAsync($"api/chats/{chatId}", ct);
+                using var response = await _http.GetAsync(url, ct);
                 if (!response.IsSuccessStatusCode)
                 {
-                    return GatewayResult<ChatDetailsDto>.Fail(await ReadErrorAsync(response, ct));
+                    return GatewayResult<T>.Fail(await ReadErrorAsync(response, ct));
                 }
 
-                var chat = await response.Content.ReadFromJsonAsync<ChatDetailsDto>(ct);
-                return chat is null
-                    ? GatewayResult<ChatDetailsDto>.Fail("ChatService svarede uden en chat.")
-                    : GatewayResult<ChatDetailsDto>.Ok(chat);
+                var value = await response.Content.ReadFromJsonAsync<T>(ct);
+                return value is null
+                    ? GatewayResult<T>.Fail(emptyError)
+                    : GatewayResult<T>.Ok(value);
             }
             catch (HttpRequestException)
             {
-                return GatewayResult<ChatDetailsDto>.Fail(ConnectionError);
+                return GatewayResult<T>.Fail(ConnectionError);
             }
         }
 
