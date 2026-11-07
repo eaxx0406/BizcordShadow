@@ -2,6 +2,7 @@ using ChatService.Contracts;
 using ChatService.DomainModel.Entities;
 using ChatService.ServiceLayer.AddParticipant;
 using ChatService.ServiceLayer.CreateChat;
+using ChatService.ServiceLayer.GetChatById;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 
@@ -57,11 +58,19 @@ namespace ChatService.Controllers
             return Ok();
         }
 
-        //// GET api/chats/{id}
-        //[HttpGet("{id:guid}")]
-        //public ActionResult<ChatDto> GetById(Guid id)
-        //{
-           
-        //}
+        // GET api/chats/{id}
+        [HttpGet("{id:guid}")]
+        public async Task<ActionResult<ChatDetailsDto>> GetById(Guid id, CancellationToken cancellationToken)
+        {
+            //MediatR will handle the query and return the chat, or null if it does not exist
+            ChatDetailsDto? chat = await _mediator.Send(new GetChatByIdQuery(id), cancellationToken);
+
+            if (chat is null)
+            {
+                return NotFound();
+            }
+
+            return Ok(chat);
+        }
     }
 }
