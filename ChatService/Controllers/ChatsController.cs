@@ -29,8 +29,14 @@ namespace ChatService.Controllers
                 return BadRequest("Chat name cannot be empty.");
             }
 
+            // A chat needs at least one member besides the creator (ADR 0012)
+            if (request.ParticipantUserIds is null || !request.ParticipantUserIds.Any(id => id != request.CreatedByUserId))
+            {
+                return BadRequest("A chat needs at least one member besides the creator.");
+            }
+
             //MediatR will handle the command and return the created chat
-            Chat chat = await _mediator.Send(new CreateChatCommand(request.Name, request.CreatedByUserId), cancellationToken);
+            Chat chat = await _mediator.Send(new CreateChatCommand(request.Name, request.CreatedByUserId, request.ParticipantUserIds), cancellationToken);
 
             //Så skal vi vel marshal det til en DTO vi kan returnere til klienten
             return Ok(new ChatDto(chat.Id, chat.Name));
