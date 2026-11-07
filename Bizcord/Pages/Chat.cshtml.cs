@@ -9,14 +9,16 @@ namespace Bizcord.Pages
     public class ChatModel : PageModel
     {
         private readonly GatewayClient _gateway;
+        private readonly CurrentUser _currentUser;
 
-        public ChatModel(GatewayClient gateway)
+        public ChatModel(GatewayClient gateway, CurrentUser currentUser)
         {
             _gateway = gateway;
+            _currentUser = currentUser;
         }
 
-        public string UserName => CurrentUser.Name;
-        public Guid UserId => CurrentUser.Id;
+        public string UserName => _currentUser.Name;
+        public Guid UserId => _currentUser.Id;
 
         // Chatlisten i venstre side, hentet fra ChatService (GET api/chats?userId=...)
         public IReadOnlyList<ChatPreview> Chats { get; private set; } = [];
@@ -25,7 +27,7 @@ namespace Bizcord.Pages
         public string? ChatsError { get; private set; }
 
         // Brugere, der kan tilføjes (alle testbrugere undtagen en selv)
-        public IReadOnlyList<TestUser> OtherUsers => TestUsers.All.Where(u => u.Id != CurrentUser.Id).ToList();
+        public IReadOnlyList<TestUser> OtherUsers => TestUsers.All.Where(u => u.Id != _currentUser.Id).ToList();
 
         // Den åbne chat fra URL'en (/Chat/{id}). Null = ingen chat åben, så vises velkomsten.
         [BindProperty(SupportsGet = true, Name = "id")]
@@ -82,7 +84,7 @@ namespace Bizcord.Pages
             }
 
             var result = await _gateway.CreateChatAsync(
-                new CreateChatRequest(NewChatName ?? string.Empty, CurrentUser.Id, NewChatMemberIds));
+                new CreateChatRequest(NewChatName ?? string.Empty, _currentUser.Id, NewChatMemberIds));
 
             if (!result.IsSuccess)
             {
@@ -131,7 +133,7 @@ namespace Bizcord.Pages
 
         private async Task LoadChatsAsync()
         {
-            var result = await _gateway.GetMyChatsAsync(CurrentUser.Id);
+            var result = await _gateway.GetMyChatsAsync(_currentUser.Id);
             if (!result.IsSuccess)
             {
                 ChatsError = result.Error;

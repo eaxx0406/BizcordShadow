@@ -148,7 +148,7 @@ body {
 
 .bz-topbar {
   position: relative;
-  z-index: 1;
+  z-index: 2; /* over .bz-content, så bruger-dropdownen ikke ligger bag siden */
   height: 128px;
   display: flex;
   align-items: flex-start;
@@ -182,6 +182,28 @@ body {
   background: var(--bz-online);
   box-shadow: 0 0 0 3px #1f2a6a, 0 0 10px var(--bz-online);
 }
+
+/* Dev login: knap med navn + avatar, der åbner listen af testbrugere */
+.bz-user-btn {
+  display: flex;
+  align-items: center;
+  gap: .6rem;
+  border: 0;
+  background: none;
+  color: var(--bz-text);
+  padding: 0;
+  cursor: pointer;
+}
+.bz-user-btn .bz-avatar { margin-top: 0; }
+.bz-user-name { font-weight: 500; }
+.bz-user-menu {
+  --bs-dropdown-bg: var(--bz-sidebar);
+  --bs-dropdown-border-color: rgba(114, 85, 247, .4);
+  --bs-dropdown-link-hover-bg: var(--bz-hover);
+  --bs-dropdown-link-active-bg: var(--bz-primary);
+  border-radius: 12px;
+}
+.bz-user-menu .dropdown-item i { margin-right: .4rem; }
 
 .bz-content {
   position: relative;

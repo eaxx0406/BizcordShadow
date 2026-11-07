@@ -13,8 +13,14 @@
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/Bizcord.styles.css" asp-append-version="true" />
 </head>
+@inject Bizcord.Models.CurrentUser CurrentUser
 @{
     var active = ViewData["ActiveNav"] as string;
+
+    // Efter et brugerskift: bliv på samme side, men gå fra en åben chat tilbage til listen,
+    // fordi den nye bruger måske ikke er med i chatten
+    var path = Context.Request.Path;
+    var returnUrl = path.StartsWithSegments("/Chat") ? "/Chat" : path.Value + Context.Request.QueryString;
 }
 <body>
     <div class="bz-app">
@@ -43,10 +49,31 @@
                 <button type="button" class="bz-icon-btn" aria-label="Notifikationer">
                     <i class="bi bi-bell" aria-hidden="true"></i>
                 </button>
-                <button type="button" class="bz-icon-btn bz-avatar" aria-label="Profil">
-                    <i class="bi bi-person-circle" aria-hidden="true"></i>
-                    <span class="bz-online" aria-hidden="true"></span>
-                </button>
+                <!-- Dev login: skift mellem testbrugere (UserService er uden for scope) -->
+                <div class="dropdown">
+                    <button type="button" class="bz-user-btn" data-bs-toggle="dropdown" aria-expanded="false"
+                            aria-label="Logget ind som @CurrentUser.Name. Skift bruger">
+                        <span class="bz-user-name">@CurrentUser.Name</span>
+                        <span class="bz-icon-btn bz-avatar">
+                            <i class="bi bi-person-circle" aria-hidden="true"></i>
+                            <span class="bz-online" aria-hidden="true"></span>
+                        </span>
+                        <i class="bi bi-chevron-down small" aria-hidden="true"></i>
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-end bz-user-menu">
+                        <li><h6 class="dropdown-header">Log ind som (testbrugere)</h6></li>
+                        @foreach (var user in Bizcord.Models.TestUsers.CanLogIn)
+                        {
+                            var isMe = user.Id == CurrentUser.Id;
+                            <li>
+                                <a class="dropdown-item @(isMe ? "active" : "")" aria-current="@(isMe ? "true" : null)"
+                                   href="/switch-user/@user.Id?returnUrl=@Uri.EscapeDataString(returnUrl)">
+                                    <i class="bi @(isMe ? "bi-check-lg" : "bi-person")" aria-hidden="true"></i> @user.Name
+                                </a>
+                            </li>
+                        }
+                    </ul>
+                </div>
             </header>
 
             <main role="main" class="bz-content">

@@ -6,7 +6,14 @@ namespace Bizcord.Pages
     // Velkomst-dashboard (wireframe). Testformularerne for chat ligger nu på Chat-siden.
     public class IndexModel : PageModel
     {
-        public string UserName => CurrentUser.Name;
+        private readonly CurrentUser _currentUser;
+
+        public IndexModel(CurrentUser currentUser)
+        {
+            _currentUser = currentUser;
+        }
+
+        public string UserName => _currentUser.Name;
 
         public void OnGet()
         {
