@@ -24,7 +24,6 @@ B skalerer bedre ved meget store chats (tusindvis af medlemmer), fordi man ikke 
 - Da Dapper ikke har change tracking, gemmer repository'et kun den participation, der er tilføjet. Det overskriver ikke hele aggregatet.
 - `ux_participation_active` bliver i databasen som sikkerhedsnet. Hvis to requests tilføjer samme bruger samtidig, fanger indexet det, og fejlen oversættes til "allerede medlem" (se [0011](0011-fejlhaandtering-med-problemdetails.md)).
 - Endpoint: `POST /api/chats/{chatId}/participants` med `{ "userId": "..." }` i bodyen. Svaret er `201 Created`. Bodyen indeholder et **user-id**, fordi klienter kender brugere og ikke participants. ChatService slår selv participant op (se [0003](0003-userservice-er-source-of-truth.md)).
-- Gatewayen får en catch-all-route for `/api/chats/{everything}`, så nye under-stier ikke kræver en ny route hver gang.
 
 ## Konsekvenser
 - ✅ Alle regler om deltagelse står ét sted og kan testes uden database.

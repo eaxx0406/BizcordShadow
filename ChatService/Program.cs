@@ -14,6 +14,12 @@ builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(typeof(Progr
 // Register the IChatWriteRepository implementation with the DI container
 builder.Services.AddScoped<IChatWriteRepository, ChatWriteRepository>();
 
+// Register the IChatReadRepository implementation with the DI container
+builder.Services.AddScoped<IChatReadRepository, ChatReadRepository>();
+
+// Register the IParticipantReadRepository implementation with the DI container
+builder.Services.AddScoped<IParticipantReadRepository, ParticipantReadRepository>();
+
 // Dapper: map snake_case-kolonner (chat_id) til PascalCase-properties (ChatId), når der LÆSES fra databasen (se ADR 0006).
 Dapper.DefaultTypeMap.MatchNamesWithUnderscores = true;
 

@@ -11,6 +11,19 @@
           "Port": 5210 // The port of the downstream service
         }
       ]
+    },
+    {
+      // Tilføj deltager til en chat (ADR 0010). Én route per sti: gatewayen er en hvidliste.
+      "UpstreamPathTemplate": "/api/chats/{chatId}/participants", // {chatId} er en pladsholder, der fanger ét stykke af stien
+      "UpstreamHttpMethod": [ "POST" ], // Kun POST: der findes ikke andre metoder på denne sti endnu
+      "DownstreamPathTemplate": "/api/chats/{chatId}/participants", // Ocelot sætter samme {chatId} ind her
+      "DownstreamScheme": "http", // The scheme that the API Gateway will use to access the downstream service
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost", // The host of the downstream service
+          "Port": 5210 // The port of the downstream service
+        }
+      ]
     }
   ],
   "GlobalConfiguration": {
