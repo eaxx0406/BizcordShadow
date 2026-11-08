@@ -60,20 +60,41 @@ namespace ChatService.DomainModel.Entities
         public Participation AddParticipant(Guid participantId)
         {
             // Regel: kun ét aktivt medlemskab per participant (samme regel som ux_participation_active i databasen)
-            if (_participations.Any(p => p.ParticipantId == participantId && p.LeftAt is null))
+            if (FindActiveParticipation(participantId) is not null)
             {
                 throw new ConflictException("Participant er allerede med i chatten.");
             }
 
             //regel: Der er et maximum antal deltagere i en chat (se ADR 0010)
-            if (_participations.Count >= _maxParticipants)
+            //(kun AKTIVE tæller – dem, der har forladt chatten, optager ikke en plads)
+            if (_participations.Count(p => p.Period.IsActive) >= _maxParticipants)
             {
                 throw new ConflictException("Chatten har nået maksimalt antal deltagere.");
             }
-            
+
             Participation participation = new Participation(Id, participantId);
             _participations.Add(participation);
             return participation;
+        }
+
+        // Participanten forlader selv chatten. Medlemskabet slettes ikke, det afsluttes,
+        // så historikken (hvem var med hvornår) bevares. Chatten må gerne ende under 2 medlemmer:
+        // reglen "mindst 2" gælder kun ved oprettelse.
+        public Participation Leave(Guid participantId)
+        {
+            // Regel: kun et aktivt medlem kan forlade chatten.
+            // Samme svar som ved andre ikke-medlemmer: "ingen adgang" (ADR 0013, mindst mulig information)
+            Participation participation = FindActiveParticipation(participantId)
+                ?? throw new ForbiddenException("Du har ikke adgang til denne chat.");
+
+            participation.Leave();
+            return participation;
+        }
+
+        // Fælles opslag: participantens aktive medlemskab, eller null hvis der ikke er et
+        private Participation? FindActiveParticipation(Guid participantId)
+        {
+            return _participations.FirstOrDefault(p => p.ParticipantId == participantId && p.Period.IsActive);
         }
     }
 }

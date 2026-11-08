@@ -132,6 +132,22 @@ namespace Bizcord.Services
             }
         }
 
+        // DELETE api/chats/{chatId}/participants/{userId} -> GatewayAPI (Ocelot) -> ChatService. Brugeren forlader chatten.
+        public async Task<GatewayResult> LeaveChatAsync(Guid chatId, Guid userId, CancellationToken ct = default)
+        {
+            try
+            {
+                using var response = await _http.DeleteAsync($"api/chats/{chatId}/participants/{userId}", ct);
+                return response.IsSuccessStatusCode
+                    ? GatewayResult.Ok()
+                    : GatewayResult.Fail(await ReadErrorAsync(response, ct));
+            }
+            catch (HttpRequestException)
+            {
+                return GatewayResult.Fail(ConnectionError);
+            }
+        }
+
         // Laver en fejlbesked ud fra svaret: statuskode + title/detail/valideringsfejl fra ProblemDetails, hvis de findes.
         private static async Task<string> ReadErrorAsync(HttpResponseMessage response, CancellationToken ct)
         {
