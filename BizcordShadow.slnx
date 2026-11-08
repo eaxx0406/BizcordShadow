@@ -22,5 +22,7 @@
     <Project Path="apps/chat-microservice/src/MessageClient/MessageClient.csproj" />
     <Project Path="apps/chat-microservice/tests/ChatService.Tests/ChatService.Tests.csproj" />
   </Folder>
-  <Folder Name="/3. Microservices/RealTimeCommunication/" />
+  <Folder Name="/3. Microservices/RealTimeCommunication/">
+    <Project Path="apps/realtime-communication/src/RealTimeCommunicationService/RealTimeCommunicationService.csproj" />
+  </Folder>
 </Solution>

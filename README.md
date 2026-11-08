@@ -56,6 +56,13 @@ Arkitekturbeslutninger er beskrevet i [`docs/adr/`](docs/adr/README.md).
    ```
    RabbitMQ's web-UI: http://localhost:15672 (bizcord / bizcord).
 
+   Dummy-servicen `RealTimeCommunicationService` (leger den anden gruppes service: subscriber på `MessageSent` og logger dem i `realtimedb`):
+   ```
+   dotnet user-secrets set "ConnectionStrings:RabbitMQ" "host=localhost;username=bizcord;password=bizcord" --project apps/realtime-communication/src/RealTimeCommunicationService
+   dotnet user-secrets set "ConnectionStrings:RealTimeDb" "Host=localhost;Port=5433;Database=realtimedb;Username=bizcord;Password=bizcord" --project apps/realtime-communication/src/RealTimeCommunicationService
+   ```
+   Se hvad den har modtaget: http://localhost:5220/received
+
 3. **Start services** – i Visual Studio: højreklik på solution → *Configure Startup Projects* → *Multiple*, og vælg `Bizcord`, `GatewayAPI` og `ChatService` (brug **http**-profilen).
 
 4. **Test** – opret en chat i frontend, eller kør `apps/api-gateway/src/GatewayAPI/GatewayAPI.http`.
@@ -70,7 +77,7 @@ Arkitekturbeslutninger er beskrevet i [`docs/adr/`](docs/adr/README.md).
 | | |
 |---|---|
 | Host / port | `localhost` / `5432` |
-| Database | `chatdb` |
+| Database | `chatdb` (dummy: `realtimedb` på port `5433`) |
 | Bruger / password | `bizcord` / `bizcord` (kun til lokal udvikling) |
 
 - Se data: `docker compose exec chatdb psql -U bizcord -d chatdb -c "select * from chat"`

@@ -21,6 +21,23 @@ services:
       # Scripts i /docker-entrypoint-initdb.d køres i alfabetisk rækkefølge, KUN første gang (tom volume)
       - ./apps/chat-microservice/database/01-schema.sql:/docker-entrypoint-initdb.d/01-schema.sql:ro
       - ./apps/chat-microservice/database/02-seed.sql:/docker-entrypoint-initdb.d/02-seed.sql:ro
+  # DUMMY: RealTimeCommunicationService' egen database (database per service, ADR 0002). Port 5433, så den ikke støder ind i chatdb.
+  realtimedb:
+    image: postgres:17-bookworm
+    environment:
+      POSTGRES_DB: realtimedb
+      POSTGRES_USER: ${POSTGRES_USER:-bizcord}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-bizcord}
+    ports:
+      - "5433:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d realtimedb"]
+      interval: 2s
+      timeout: 5s
+      retries: 30
+    volumes:
+      - realtimedata:/var/lib/postgresql/data
+      - ./apps/realtime-communication/database/01-schema.sql:/docker-entrypoint-initdb.d/01-schema.sql:ro
   # Message broker (posthuset). 5672 = AMQP, som services taler med. 15672 = web-UI: http://localhost:15672
   rabbitmq:
     image: rabbitmq:4-management
@@ -37,3 +54,4 @@ services:
       retries: 30
 volumes:
   chatdata:
+  realtimedata:
