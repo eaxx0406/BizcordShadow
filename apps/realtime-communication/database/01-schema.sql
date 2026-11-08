@@ -6,6 +6,7 @@ create table received_message (
     message_id     uuid primary key,
     chat_id        uuid not null,
     sender_user_id uuid not null,
+    recipient_user_ids uuid[] not null, -- dem ChatService sagde skulle have beskeden
     sent_at        timestamptz not null,
     received_at    timestamptz not null
 );

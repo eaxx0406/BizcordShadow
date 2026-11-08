@@ -6,6 +6,7 @@ namespace RealTimeCommunicationService.Repositories
         public Guid MessageId { get; set; }
         public Guid ChatId { get; set; }
         public Guid SenderUserId { get; set; }
+        public Guid[] RecipientUserIds { get; set; } = [];
         public DateTime SentAt { get; set; }
         public DateTime ReceivedAt { get; set; }
     }

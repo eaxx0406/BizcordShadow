@@ -8,5 +8,10 @@ namespace ChatService.Contracts.Events
     // en command beder om, at noget skal ske.
     //
     // SenderUserId og ikke ParticipationId: andre services kender brugere, ikke ChatService' interne medlemskaber.
-    public record MessageSent(Guid MessageId, Guid ChatId, Guid SenderUserId, string Content, DateTimeOffset SentAt);
+    //
+    // RecipientUserIds: de aktive deltagere i chatten, da beskeden blev sendt (minus afsenderen).
+    // ChatService ejer deltagelse (ADR 0010), så det er ChatService, der afgør, hvem der må få beskeden.
+    // Modtagerne må IKKE selv regne det ud fra join/leave-events: kommer de i forkert rækkefølge,
+    // kan en, der lige er smidt ud, stadig få beskeden (fx i et notifikations-preview).
+    public record MessageSent(Guid MessageId, Guid ChatId, Guid SenderUserId, IReadOnlyList<Guid> RecipientUserIds, string Content, DateTimeOffset SentAt);
 }

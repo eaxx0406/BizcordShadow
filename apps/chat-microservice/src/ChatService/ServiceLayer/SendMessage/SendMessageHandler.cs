@@ -36,10 +36,15 @@ namespace ChatService.ServiceLayer.SendMessage
 
             await _messageWriteRepository.AddAsync(newMessage, cancellationToken);
 
+            // Modtagerne = de aktive deltagere lige nu, minus afsenderen selv.
+            // ChatService afgør det her og nu, så listen passer til netop denne besked (se MessageSent).
+            List<Guid> activeUserIds = await _participationReadRepository.GetActiveUserIdsAsync(command.ChatId, cancellationToken);
+            List<Guid> recipientUserIds = activeUserIds.Where(userId => userId != command.SenderUserId).ToList();
+
             // Fortæl resten af systemet, at beskeden er sendt. EFTER den er gemt: vi må ikke
             // melde noget ud, som så alligevel ikke står i databasen.
             await _messageClient.Publish(new MessageSent(
-                newMessage.Id, newMessage.ChatId, command.SenderUserId, newMessage.Content, newMessage.SentAt));
+                newMessage.Id, newMessage.ChatId, command.SenderUserId, recipientUserIds, newMessage.Content, newMessage.SentAt));
 
             return newMessage;
         }

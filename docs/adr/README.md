@@ -27,6 +27,7 @@ Her dokumenterer vi de vigtige arkitekturbeslutninger i Bizcord: hvad vi valgte,
 | [0014](0014-beskeder-hentes-med-keyset-paging.md) | Beskeder hentes i sider med keyset paging | Accepteret |
 | [0015](0015-rest-api-frem-for-graphql-og-grpc.md) | REST (JSON over HTTP) frem for GraphQL og gRPC | Accepteret |
 | [0016](0016-apps-struktur-og-dockerfile-per-app.md) | apps/-struktur med Dockerfile per app | Accepteret |
+| [0017](0017-modtagere-sendes-med-i-messagesent.md) | ChatService sender modtagerne med i MessageSent | Foreslået |
 
 ## Skabelon
 

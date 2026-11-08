@@ -18,12 +18,13 @@ namespace RealTimeCommunicationService.Repositories
         {
             await using var connection = new NpgsqlConnection(_connectionString);
 
+            // ToArray: Npgsql gemmer et C#-array direkte som et Postgres-array (uuid[]).
             // on conflict do nothing: kommer samme event igen, skriver vi det ikke to gange.
             await connection.ExecuteAsync(
-                @"INSERT INTO received_message (message_id, chat_id, sender_user_id, sent_at, received_at)
-                  VALUES (@MessageId, @ChatId, @SenderUserId, @SentAt, @ReceivedAt)
+                @"INSERT INTO received_message (message_id, chat_id, sender_user_id, recipient_user_ids, sent_at, received_at)
+                  VALUES (@MessageId, @ChatId, @SenderUserId, @RecipientUserIds, @SentAt, @ReceivedAt)
                   ON CONFLICT (message_id) DO NOTHING",
-                new { message.MessageId, message.ChatId, message.SenderUserId, message.SentAt, ReceivedAt = DateTimeOffset.UtcNow });
+                new { message.MessageId, message.ChatId, message.SenderUserId, RecipientUserIds = message.RecipientUserIds.ToArray(), message.SentAt, ReceivedAt = DateTimeOffset.UtcNow });
         }
 
         public async Task<IEnumerable<ReceivedMessageRow>> GetAllAsync()
@@ -31,7 +32,7 @@ namespace RealTimeCommunicationService.Repositories
             await using var connection = new NpgsqlConnection(_connectionString);
 
             return await connection.QueryAsync<ReceivedMessageRow>(
-                "SELECT message_id, chat_id, sender_user_id, sent_at, received_at FROM received_message ORDER BY received_at DESC");
+                "SELECT message_id, chat_id, sender_user_id, recipient_user_ids, sent_at, received_at FROM received_message ORDER BY received_at DESC");
         }
     }
 }
