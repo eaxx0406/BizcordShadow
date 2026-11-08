@@ -77,6 +77,11 @@
                         title="Tilføj deltager" aria-label="Tilføj deltager">
                     <i class="bi bi-person-plus" aria-hidden="true"></i>
                 </button>
+                <form method="post" asp-page-handler="LeaveChat" asp-route-id="@chat.Id">
+                    <button type="submit" class="btn bz-btn-icon" title="Forlad chat" aria-label="Forlad chat">
+                        <i class="bi bi-box-arrow-right" aria-hidden="true"></i>
+                    </button>
+                </form>
             </header>
 
             @if (Model.FlashMessage is not null)
@@ -153,6 +158,14 @@
     {
     <!-- Højre: velkomst og handlinger -->
     <section class="chat-welcome">
+        @if (Model.FlashMessage is not null)
+        {
+            <div class="alert alert-success alert-dismissible fade show" role="status">
+                @Model.FlashMessage
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Luk"></button>
+            </div>
+        }
+
         <img class="chat-hero" src="~/img/mascot-laptop.png" alt="Bizcord-maskotten sidder glad ved sin computer" />
 
         <h2 class="welcome-title">Dine samtaler</h2>

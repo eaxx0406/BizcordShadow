@@ -5,22 +5,22 @@ Content-Type: application/json
 
 {
   "name": "Min første chat",
-  "createdByUserId": "11111111-1111-1111-1111-111111111111",
+  "createdByUserId": "10000000-0000-0000-0000-000000000001",
   "participantUserIds": [
-    "22222222-2222-2222-2222-222222222222",
-    "33333333-3333-3333-3333-333333333333"
+    "10000000-0000-0000-0000-000000000002",
+    "10000000-0000-0000-0000-000000000003"
   ]
 }
 
 ###
 
 # Hent én chat med medlemmer (indsæt et id fra svaret på POST ovenfor)
-GET {{ChatService_HostAddress}}/api/chats/00000000-0000-0000-0000-000000000000?userId=11111111-1111-1111-1111-111111111111
+GET {{ChatService_HostAddress}}/api/chats/00000000-0000-0000-0000-000000000000?userId=10000000-0000-0000-0000-000000000001
 
 ###
 
 # Mine chats (userId er Test Bruger, indtil der findes login)
-GET {{ChatService_HostAddress}}/api/chats?userId=11111111-1111-1111-1111-111111111111
+GET {{ChatService_HostAddress}}/api/chats?userId=10000000-0000-0000-0000-000000000001
 
 ###
 
@@ -29,13 +29,13 @@ POST {{ChatService_HostAddress}}/api/chats/00000000-0000-0000-0000-000000000000/
 Content-Type: application/json
 
 {
-  "senderUserId": "11111111-1111-1111-1111-111111111111",
+  "senderUserId": "10000000-0000-0000-0000-000000000001",
   "content": "Hej med jer!"
 }
 
 ###
 
 # Læs beskeder: de 30 nyeste. Ældre: tilføj &before=<id på den ældste besked, du har>
-GET {{ChatService_HostAddress}}/api/chats/00000000-0000-0000-0000-000000000000/messages?userId=11111111-1111-1111-1111-111111111111&limit=30
+GET {{ChatService_HostAddress}}/api/chats/00000000-0000-0000-0000-000000000000/messages?userId=10000000-0000-0000-0000-000000000001&limit=30
 
 ###

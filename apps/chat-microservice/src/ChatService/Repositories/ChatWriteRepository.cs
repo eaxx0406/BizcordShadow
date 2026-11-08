@@ -68,5 +68,19 @@ namespace ChatService.Repositories
                 participation,
                 cancellationToken: cancellationToken));
         }
+
+        public async Task LeaveParticipationAsync(Participation participation, CancellationToken cancellationToken)
+        {
+            //forbinde til databasen
+            await using var connection = new NpgsqlConnection(_connectionString);
+            await connection.OpenAsync(cancellationToken);
+
+            //sæt left_at på den eksisterende række – rækken slettes ikke, så historikken bevares
+            //(@LeftAt er genvejen Participation.LeftAt, som læser fra value objectet Period)
+            await connection.ExecuteAsync(new CommandDefinition(
+                "UPDATE participation SET left_at = @LeftAt WHERE id = @Id",
+                participation,
+                cancellationToken: cancellationToken));
+        }
     }
 }

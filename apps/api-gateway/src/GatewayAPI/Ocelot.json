@@ -26,6 +26,19 @@
       ]
     },
     {
+      // Forlad en chat: brugeren fjerner sig selv som deltager
+      "UpstreamPathTemplate": "/api/chats/{chatId}/participants/{userId}",
+      "UpstreamHttpMethod": [ "DELETE" ],
+      "DownstreamPathTemplate": "/api/chats/{chatId}/participants/{userId}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 5210
+        }
+      ]
+    },
+    {
       // Hent én chat med medlemmer
       "UpstreamPathTemplate": "/api/chats/{chatId}",
       "UpstreamHttpMethod": [ "GET" ],

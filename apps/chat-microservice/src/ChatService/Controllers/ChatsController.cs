@@ -4,6 +4,7 @@ using ChatService.ServiceLayer.AddParticipant;
 using ChatService.ServiceLayer.CreateChat;
 using ChatService.ServiceLayer.GetChatById;
 using ChatService.ServiceLayer.GetMyChats;
+using ChatService.ServiceLayer.LeaveChat;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 
@@ -74,6 +75,19 @@ namespace ChatService.Controllers
             await _mediator.Send(new AddParticipantCommand(chatId, request.UserId), cancellationToken);
 
             return Ok();
+        }
+
+        // DELETE api/chats/{chatId}/participants/{userId}
+        // Brugeren forlader selv chatten. Medlemskabet afsluttes (left_at sættes), det slettes ikke.
+        // userId er den, der forlader – indtil der findes login. Så bliver det .../participants/me.
+        [HttpDelete("{chatId:guid}/participants/{userId:guid}")]
+        public async Task<ActionResult> Leave(Guid chatId, Guid userId, CancellationToken cancellationToken)
+        {
+            //MediatR will handle the command (ForbiddenException -> 403 if the user is not a member, ADR 0013)
+            await _mediator.Send(new LeaveChatCommand(chatId, userId), cancellationToken);
+
+            //204: det lykkedes, og der er intet at sende tilbage
+            return NoContent();
         }
 
         // GET api/chats/{id}?userId=...

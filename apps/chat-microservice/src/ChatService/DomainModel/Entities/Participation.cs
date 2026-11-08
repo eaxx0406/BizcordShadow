@@ -1,4 +1,6 @@
-﻿namespace ChatService.DomainModel.Entities
+﻿using ChatService.DomainModel.ValueObjects;
+
+namespace ChatService.DomainModel.Entities
 {
     // Del af Chat-aggregatet: en participants medlemskab af en chat i en periode.
     // Oprettes kun via Chat.AddParticipant (derfor internal konstruktor).
@@ -7,15 +9,20 @@
         public Guid Id { get; private set; }
         public Guid ChatId { get; private set; }
         public Guid ParticipantId { get; private set; }
-        public DateTimeOffset JoinedAt { get; private set; }
-        public DateTimeOffset? LeftAt { get; private set; }
+
+        // Hvornår medlemskabet startede og evt. sluttede – et value object, så reglerne ligger ét sted
+        public MembershipPeriod Period { get; private set; } = null!;
+
+        // Genveje til perioden, så Dapper stadig kan finde @JoinedAt og @LeftAt i SQL'en
+        public DateTimeOffset JoinedAt => Period.JoinedAt;
+        public DateTimeOffset? LeftAt => Period.LeftAt;
 
         internal Participation(Guid chatId, Guid participantId)
         {
             Id = Guid.NewGuid();
             ChatId = chatId;
             ParticipantId = participantId;
-            JoinedAt = DateTimeOffset.UtcNow;
+            Period = new MembershipPeriod(DateTimeOffset.UtcNow);
         }
 
         // Tom konstruktor, som kun Rehydrate må bruge (derfor private).
@@ -29,9 +36,15 @@
             participation.Id = id;
             participation.ChatId = chatId;
             participation.ParticipantId = participantId;
-            participation.JoinedAt = joinedAt;
-            participation.LeftAt = leftAt;
+            participation.Period = new MembershipPeriod(joinedAt, leftAt);
             return participation;
+        }
+
+        // Afslutter medlemskabet. Internal: kun Chat (aggregate root) må kalde den, via Chat.Leave.
+        internal void Leave()
+        {
+            // Perioden udskiftes med en ny, afsluttet periode – value objects ændres ikke
+            Period = Period.End(DateTimeOffset.UtcNow);
         }
     }
 }

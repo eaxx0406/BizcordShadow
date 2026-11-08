@@ -10,5 +10,8 @@ namespace ChatService.Repositories.Interfaces
 
         // Gemmer KUN én ny participation i en eksisterende chat (se ADR 0010).
         Task AddParticipationAsync(Participation participation, CancellationToken cancellationToken);
+
+        // Gemmer at en participation er afsluttet (participanten har forladt chatten).
+        Task LeaveParticipationAsync(Participation participation, CancellationToken cancellationToken);
     }
 }

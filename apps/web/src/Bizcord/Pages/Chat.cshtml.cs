@@ -152,6 +152,29 @@ namespace Bizcord.Pages
             return RedirectToPage("/Chat", new { id = ChatId });
         }
 
+        public async Task<IActionResult> OnPostLeaveChat()
+        {
+            if (OpenChatId is null)
+            {
+                return RedirectToPage("/Chat");
+            }
+
+            var result = await _gateway.LeaveChatAsync(OpenChatId.Value, _currentUser.Id);
+
+            if (!result.IsSuccess)
+            {
+                // Fejlen vises over skrivefeltet i den åbne chat
+                OpenDialog = "message";
+                SetError($"Kunne ikke forlade chatten. {result.Error}");
+                await LoadPageAsync();
+                return Page();
+            }
+
+            // Succes: man er ikke længere medlem, så chatten kan ikke vises – tilbage til velkomsten
+            FlashMessage = "Du har forladt chatten.";
+            return RedirectToPage("/Chat", new { id = (Guid?)null });
+        }
+
         public async Task<IActionResult> OnPostSendMessage()
         {
             OpenDialog = "message";
