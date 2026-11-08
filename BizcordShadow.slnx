@@ -19,10 +19,13 @@
     <File Path="apps/chat-microservice/README.md" />
     <Project Path="apps/chat-microservice/src/ChatService.Contracts/ChatService.Contracts.csproj" />
     <Project Path="apps/chat-microservice/src/ChatService/ChatService.csproj" />
-    <Project Path="apps/chat-microservice/src/MessageClient/MessageClient.csproj" />
     <Project Path="apps/chat-microservice/tests/ChatService.Tests/ChatService.Tests.csproj" />
   </Folder>
   <Folder Name="/3. Microservices/RealTimeCommunication/">
     <Project Path="apps/realtime-communication/src/RealTimeCommunicationService/RealTimeCommunicationService.csproj" />
+  </Folder>
+  <Folder Name="/4. Shared/">
+    <File Path="shared/README.md" />
+    <Project Path="shared/src/MessageClient/MessageClient.csproj" />
   </Folder>
 </Solution>

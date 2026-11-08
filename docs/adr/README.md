@@ -28,6 +28,7 @@ Her dokumenterer vi de vigtige arkitekturbeslutninger i Bizcord: hvad vi valgte,
 | [0015](0015-rest-api-frem-for-graphql-og-grpc.md) | REST (JSON over HTTP) frem for GraphQL og gRPC | Accepteret |
 | [0016](0016-apps-struktur-og-dockerfile-per-app.md) | apps/-struktur med Dockerfile per app | Accepteret |
 | [0017](0017-modtagere-sendes-med-i-messagesent.md) | ChatService sender modtagerne med i MessageSent | Foreslået |
+| [0018](0018-delt-infrastruktur-i-shared.md) | Delt infrastruktur ligger i shared/ – MessageClient er den første | Foreslået |
 
 ## Skabelon
 

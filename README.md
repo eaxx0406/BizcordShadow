@@ -27,6 +27,8 @@ apps/
     src/        Bizcord (Razor Pages)
     Dockerfile
     README.md
+shared/
+  src/          MessageClient (fælles infrastruktur, ingen domænekode)
 docs/adr/       arkitekturbeslutninger
 compose.yaml    lokal infrastruktur (database, RabbitMQ)
 ```

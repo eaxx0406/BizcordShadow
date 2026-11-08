@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <ItemGroup>
-    <ProjectReference Include="..\..\..\chat-microservice\src\MessageClient\MessageClient.csproj" />
+    <ProjectReference Include="..\..\..\..\shared\src\MessageClient\MessageClient.csproj" />
     <ProjectReference Include="..\..\..\chat-microservice\src\ChatService.Contracts\ChatService.Contracts.csproj" />
   </ItemGroup>
 
