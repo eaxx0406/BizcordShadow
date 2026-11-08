@@ -1,0 +1,20 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\..\shared\src\MessageClient\MessageClient.csproj" />
+    <ProjectReference Include="..\..\..\chat-microservice\src\ChatService.Contracts\ChatService.Contracts.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Dapper" Version="2.1.89" />
+    <PackageReference Include="Npgsql" Version="10.0.3" />
+  </ItemGroup>
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <UserSecretsId>e4f307b1-4947-42d2-8ac3-fd10e1b0cb77</UserSecretsId>
+  </PropertyGroup>
+
+</Project>

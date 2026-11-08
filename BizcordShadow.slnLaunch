@@ -1,0 +1,47 @@
+[
+  {
+    "Name": "Alt (web + gateway + chat + RTC)",
+    "Projects": [
+      {
+        "Path": "apps\\web\\src\\Bizcord\\Bizcord.csproj",
+        "Action": "Start",
+        "DebugTarget": "http"
+      },
+      {
+        "Path": "apps\\api-gateway\\src\\GatewayAPI\\GatewayAPI.csproj",
+        "Action": "Start",
+        "DebugTarget": "http"
+      },
+      {
+        "Path": "apps\\chat-microservice\\src\\ChatService\\ChatService.csproj",
+        "Action": "Start",
+        "DebugTarget": "http"
+      },
+      {
+        "Path": "apps\\realtime-communication\\src\\RealTimeCommunicationService\\RealTimeCommunicationService.csproj",
+        "Action": "Start",
+        "DebugTarget": "http"
+      }
+    ]
+  },
+  {
+    "Name": "RTC nede (web + gateway + chat)",
+    "Projects": [
+      {
+        "Path": "apps\\web\\src\\Bizcord\\Bizcord.csproj",
+        "Action": "Start",
+        "DebugTarget": "http"
+      },
+      {
+        "Path": "apps\\api-gateway\\src\\GatewayAPI\\GatewayAPI.csproj",
+        "Action": "Start",
+        "DebugTarget": "http"
+      },
+      {
+        "Path": "apps\\chat-microservice\\src\\ChatService\\ChatService.csproj",
+        "Action": "Start",
+        "DebugTarget": "http"
+      }
+    ]
+  }
+]

@@ -32,5 +32,23 @@ namespace ChatService.Repositories
                 new { ChatId = chatId, UserId = userId },
                 cancellationToken: cancellationToken));
         }
+
+        public async Task<List<Guid>> GetActiveUserIdsAsync(Guid chatId, CancellationToken cancellationToken)
+        {
+            //Forbind til databasen
+            await using var connection = new NpgsqlConnection(_connectionString);
+
+            //Åbn forbindelsen
+            await connection.OpenAsync(cancellationToken);
+
+            //Alle, der er med i chatten lige nu (left_at IS NULL = ikke forladt/smidt ud)
+            return (await connection.QueryAsync<Guid>(new CommandDefinition(
+                @"SELECT p.user_id
+                  FROM participation pa
+                  JOIN participant p ON p.id = pa.participant_id
+                  WHERE pa.chat_id = @ChatId AND pa.left_at IS NULL",
+                new { ChatId = chatId },
+                cancellationToken: cancellationToken))).ToList();
+        }
     }
 }
