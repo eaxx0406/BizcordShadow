@@ -1,14 +1,26 @@
 <Solution>
+  <Folder Name="/0. Solution Items/">
+    <File Path="compose.yaml" />
+    <File Path="README.md" />
+  </Folder>
   <Folder Name="/1. Frontend/">
+    <File Path="apps/web/Dockerfile" />
+    <File Path="apps/web/README.md" />
     <Project Path="apps/web/src/Bizcord/Bizcord.csproj" />
   </Folder>
   <Folder Name="/2. Gateway/">
+    <File Path="apps/api-gateway/Dockerfile" />
+    <File Path="apps/api-gateway/README.md" />
     <Project Path="apps/api-gateway/src/GatewayAPI/GatewayAPI.csproj" />
   </Folder>
   <Folder Name="/3. Microservices/" />
   <Folder Name="/3. Microservices/Chat/">
+    <File Path="apps/chat-microservice/Dockerfile" />
+    <File Path="apps/chat-microservice/README.md" />
     <Project Path="apps/chat-microservice/src/ChatService.Contracts/ChatService.Contracts.csproj" />
     <Project Path="apps/chat-microservice/src/ChatService/ChatService.csproj" />
+    <Project Path="apps/chat-microservice/src/MessageClient/MessageClient.csproj" />
     <Project Path="apps/chat-microservice/tests/ChatService.Tests/ChatService.Tests.csproj" />
   </Folder>
+  <Folder Name="/3. Microservices/RealTimeCommunication/" />
 </Solution>

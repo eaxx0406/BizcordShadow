@@ -10,6 +10,7 @@ WORKDIR /repo
 # Projektfilerne først: så genbruger Docker restore-laget, så længe pakkerne ikke ændres
 COPY apps/chat-microservice/src/ChatService/ChatService.csproj apps/chat-microservice/src/ChatService/
 COPY apps/chat-microservice/src/ChatService.Contracts/ChatService.Contracts.csproj apps/chat-microservice/src/ChatService.Contracts/
+COPY apps/chat-microservice/src/MessageClient/MessageClient.csproj apps/chat-microservice/src/MessageClient/
 RUN dotnet restore apps/chat-microservice/src/ChatService/ChatService.csproj
 
 # Så resten af koden, og publish

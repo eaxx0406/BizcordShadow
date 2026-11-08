@@ -1,7 +1,9 @@
 using ChatService.DomainModel.Entities;
 using ChatService.DomainModel.Exceptions;
 using ChatService.Repositories.Interfaces;
+using ChatService.Contracts.Events;
 using MediatR;
+using MessageClient.Interfaces;
 
 namespace ChatService.ServiceLayer.SendMessage
 {
@@ -9,11 +11,13 @@ namespace ChatService.ServiceLayer.SendMessage
     {
         private readonly IMessageWriteRepository _messageWriteRepository;
         private readonly IParticipationReadRepository _participationReadRepository;
+        private readonly IMessageClient _messageClient;
 
-        public SendMessageHandler(IMessageWriteRepository messageWriteRepository, IParticipationReadRepository participationReadRepository)
+        public SendMessageHandler(IMessageWriteRepository messageWriteRepository, IParticipationReadRepository participationReadRepository, IMessageClient messageClient)
         {
             _messageWriteRepository = messageWriteRepository;
             _participationReadRepository = participationReadRepository;
+            _messageClient = messageClient;
         }
 
         public async Task<Message> Handle(SendMessageCommand command, CancellationToken cancellationToken)
@@ -31,6 +35,12 @@ namespace ChatService.ServiceLayer.SendMessage
             Message newMessage = new Message(command.ChatId, senderParticipationId.Value, command.Content);
 
             await _messageWriteRepository.AddAsync(newMessage, cancellationToken);
+
+            // Fortæl resten af systemet, at beskeden er sendt. EFTER den er gemt: vi må ikke
+            // melde noget ud, som så alligevel ikke står i databasen.
+            await _messageClient.Publish(new MessageSent(
+                newMessage.Id, newMessage.ChatId, command.SenderUserId, newMessage.Content, newMessage.SentAt));
+
             return newMessage;
         }
     }

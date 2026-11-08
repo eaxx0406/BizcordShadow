@@ -28,7 +28,7 @@ apps/
     Dockerfile
     README.md
 docs/adr/       arkitekturbeslutninger
-compose.yaml    lokal infrastruktur (database)
+compose.yaml    lokal infrastruktur (database, RabbitMQ)
 ```
 
 | App | Rolle |
@@ -52,7 +52,9 @@ Arkitekturbeslutninger er beskrevet i [`docs/adr/`](docs/adr/README.md).
 2. **Sæt connection string** (én gang per maskine – gemmes uden for repoet)
    ```
    dotnet user-secrets set "ConnectionStrings:ChatDb" "Host=localhost;Port=5432;Database=chatdb;Username=bizcord;Password=bizcord" --project apps/chat-microservice/src/ChatService
+   dotnet user-secrets set "ConnectionStrings:RabbitMQ" "host=localhost;username=bizcord;password=bizcord" --project apps/chat-microservice/src/ChatService
    ```
+   RabbitMQ's web-UI: http://localhost:15672 (bizcord / bizcord).
 
 3. **Start services** – i Visual Studio: højreklik på solution → *Configure Startup Projects* → *Multiple*, og vælg `Bizcord`, `GatewayAPI` og `ChatService` (brug **http**-profilen).
 

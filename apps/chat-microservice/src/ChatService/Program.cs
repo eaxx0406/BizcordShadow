@@ -1,6 +1,7 @@
 using ChatService.ExceptionHandling;
 using ChatService.Repositories;
 using ChatService.Repositories.Interfaces;
+using MessageClient.Extensions;
 
 // ===== FASE 1: Registrér services (hvad appen HAR) =====
 // Alt med builder.Services.Add... skal stå FØR Build()
@@ -23,6 +24,12 @@ builder.Services.AddScoped<IParticipantReadRepository, ParticipantReadRepository
 builder.Services.AddScoped<IParticipationReadRepository, ParticipationReadRepository>();
 builder.Services.AddScoped<IMessageWriteRepository, MessageWriteRepository>();
 builder.Services.AddScoped<IMessageReadRepository, MessageReadRepository>();
+
+// Message client (RabbitMQ via EasyNetQ). Connection string ligger i user-secrets, ligesom ChatDb (se README).
+// Fail fast: mangler den, stopper appen ved opstart i stedet for at fejle første gang en besked sendes.
+var rabbitMqConnectionString = builder.Configuration.GetConnectionString("RabbitMQ")
+    ?? throw new InvalidOperationException("Connection string 'RabbitMQ' mangler. Se README.");
+builder.Services.AddMessageClient(rabbitMqConnectionString);
 
 // Dapper: map snake_case-kolonner (chat_id) til PascalCase-properties (ChatId), når der LÆSES fra databasen (se ADR 0006).
 Dapper.DefaultTypeMap.MatchNamesWithUnderscores = true;

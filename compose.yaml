@@ -21,5 +21,19 @@ services:
       # Scripts i /docker-entrypoint-initdb.d køres i alfabetisk rækkefølge, KUN første gang (tom volume)
       - ./apps/chat-microservice/database/01-schema.sql:/docker-entrypoint-initdb.d/01-schema.sql:ro
       - ./apps/chat-microservice/database/02-seed.sql:/docker-entrypoint-initdb.d/02-seed.sql:ro
+  # Message broker (posthuset). 5672 = AMQP, som services taler med. 15672 = web-UI: http://localhost:15672
+  rabbitmq:
+    image: rabbitmq:4-management
+    environment:
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER:-bizcord}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSWORD:-bizcord}
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 30
 volumes:
   chatdata:
