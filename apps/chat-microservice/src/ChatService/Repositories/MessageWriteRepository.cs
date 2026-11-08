@@ -28,5 +28,19 @@ namespace ChatService.Repositories
                 message,
                 cancellationToken: cancellationToken));
         }
+
+        public async Task MarkDeletedAsync(Message message, CancellationToken cancellationToken)
+        {
+            //forbinde til databasen
+            await using var connection = new NpgsqlConnection(_connectionString);
+            await connection.OpenAsync(cancellationToken);
+
+            //soft delete (ADR 0020): rækken bliver, men indholdet overskrives, så teksten er væk for altid
+            //(@Content er tom og @DeletedAt er sat af Message.Delete – repository'et har ingen regler)
+            await connection.ExecuteAsync(new CommandDefinition(
+                "UPDATE message SET content = @Content, deleted_at = @DeletedAt WHERE id = @Id",
+                message,
+                cancellationToken: cancellationToken));
+        }
     }
 }

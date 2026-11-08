@@ -4,8 +4,8 @@ using ChatService.Contracts;
 namespace Bizcord.Models
 {
     // Det, partialen _ChatMessages skal bruge: én side beskeder (ældste først), om der findes ældre,
-    // og hvem "mig" er (så egne beskeder kan vises til højre).
-    public record MessageList(IReadOnlyList<ChatMessageDto> Messages, bool HasOlder, Guid CurrentUserId)
+    // og hvem "mig" er (så egne beskeder kan vises til højre og slettes). ChatId bruges af slet-knappen.
+    public record MessageList(IReadOnlyList<ChatMessageDto> Messages, bool HasOlder, Guid CurrentUserId, Guid ChatId)
     {
         private static readonly CultureInfo Danish = CultureInfo.GetCultureInfo("da-DK");
 

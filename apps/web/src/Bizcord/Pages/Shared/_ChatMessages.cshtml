@@ -12,12 +12,32 @@
 @foreach (var message in Model.Messages)
 {
     var mine = message.SenderUserId == Model.CurrentUserId;
-    <div class="msg @(mine ? "msg-mine" : "")">
+    <div class="msg @(mine ? "msg-mine" : "") @(message.IsDeleted ? "msg-deleted" : "")">
         @if (!mine)
         {
             <span class="msg-sender">@message.SenderName</span>
         }
-        <div class="msg-bubble">@message.Content</div>
-        <time class="msg-time" datetime="@message.SentAt.ToString("o")">@Bizcord.Models.MessageList.FormatTime(message.SentAt)</time>
+        @if (message.IsDeleted)
+        {
+            <!-- Slettet (ADR 0020): beskeden bliver stående, så samtalen giver mening, men indholdet er væk -->
+            <div class="msg-bubble"><i class="bi bi-trash3" aria-hidden="true"></i> Beskeden er slettet</div>
+        }
+        else
+        {
+            <div class="msg-bubble">@message.Content</div>
+        }
+        <div class="msg-meta">
+            <time class="msg-time" datetime="@message.SentAt.ToString("o")">@Bizcord.Models.MessageList.FormatTime(message.SentAt)</time>
+            @if (mine && !message.IsDeleted)
+            {
+                <!-- Kun egne beskeder kan slettes (reglen håndhæves også i ChatService) -->
+                <form method="post" asp-page="/Chat" asp-page-handler="DeleteMessage" asp-route-id="@Model.ChatId" class="msg-delete-form">
+                    <input type="hidden" name="messageId" value="@message.Id" />
+                    <button type="submit" class="msg-delete" title="Slet besked" aria-label="Slet besked">
+                        <i class="bi bi-trash3" aria-hidden="true"></i>
+                    </button>
+                </form>
+            }
+        </div>
     </div>
 }

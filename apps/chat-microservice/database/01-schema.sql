@@ -30,7 +30,9 @@ create table message (
     chat_id   uuid not null references chat(id) on delete restrict,
     sender_id uuid not null references participation(id) on delete restrict,
     content   text not null,
-    sent_at   timestamptz not null
+    sent_at   timestamptz not null,
+    -- Soft delete (ADR 0020): sat, når afsenderen har slettet beskeden. content er så tom.
+    deleted_at timestamptz
 );
 
 -- Keyset paging (ADR 0014): "de nyeste beskeder i en chat, ældre end X" bliver et opslag i dette index,

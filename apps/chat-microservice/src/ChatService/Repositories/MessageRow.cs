@@ -11,5 +11,8 @@ namespace ChatService.Repositories
 
         // DateTime og ikke DateTimeOffset: Npgsql læser timestamptz som DateTime (i UTC).
         public DateTime SentAt { get; set; }
+
+        // Sat, hvis beskeden er slettet (ADR 0020)
+        public DateTime? DeletedAt { get; set; }
     }
 }

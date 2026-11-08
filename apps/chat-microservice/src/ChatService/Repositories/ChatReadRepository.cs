@@ -115,7 +115,8 @@ namespace ChatService.Repositories
                   JOIN participation mine ON mine.participant_id = me.id AND mine.left_at IS NULL
                   JOIN chat c ON c.id = mine.chat_id
                   LEFT JOIN LATERAL (
-                      SELECT m.content, p.name AS sender_name, m.sent_at
+                      SELECT CASE WHEN m.deleted_at IS NULL THEN m.content END AS content, -- null, hvis den er slettet (ADR 0020)
+                             p.name AS sender_name, m.sent_at
                       FROM message m
                       JOIN participation sp ON sp.id = m.sender_id
                       JOIN participant p ON p.id = sp.participant_id

@@ -132,6 +132,38 @@ namespace Bizcord.Services
             }
         }
 
+        // PUT api/chats/{chatId} -> GatewayAPI (Ocelot) -> ChatService. Giver chatten et nyt navn.
+        public async Task<GatewayResult> RenameChatAsync(Guid chatId, RenameChatRequest request, CancellationToken ct = default)
+        {
+            try
+            {
+                using var response = await _http.PutAsJsonAsync($"api/chats/{chatId}", request, ct);
+                return response.IsSuccessStatusCode
+                    ? GatewayResult.Ok()
+                    : GatewayResult.Fail(await ReadErrorAsync(response, ct));
+            }
+            catch (HttpRequestException)
+            {
+                return GatewayResult.Fail(ConnectionError);
+            }
+        }
+
+        // DELETE api/chats/{chatId}/messages/{messageId}?userId=... -> GatewayAPI (Ocelot) -> ChatService. Sletter en egen besked.
+        public async Task<GatewayResult> DeleteMessageAsync(Guid chatId, Guid messageId, Guid userId, CancellationToken ct = default)
+        {
+            try
+            {
+                using var response = await _http.DeleteAsync($"api/chats/{chatId}/messages/{messageId}?userId={userId}", ct);
+                return response.IsSuccessStatusCode
+                    ? GatewayResult.Ok()
+                    : GatewayResult.Fail(await ReadErrorAsync(response, ct));
+            }
+            catch (HttpRequestException)
+            {
+                return GatewayResult.Fail(ConnectionError);
+            }
+        }
+
         // DELETE api/chats/{chatId}/participants/{userId} -> GatewayAPI (Ocelot) -> ChatService. Brugeren forlader chatten.
         public async Task<GatewayResult> LeaveChatAsync(Guid chatId, Guid userId, CancellationToken ct = default)
         {

@@ -39,9 +39,9 @@
       ]
     },
     {
-      // Hent én chat med medlemmer
+      // Hent én chat med medlemmer (GET) og omdøb den (PUT)
       "UpstreamPathTemplate": "/api/chats/{chatId}",
-      "UpstreamHttpMethod": [ "GET" ],
+      "UpstreamHttpMethod": [ "GET", "PUT" ],
       "DownstreamPathTemplate": "/api/chats/{chatId}",
       "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
@@ -56,6 +56,19 @@
       "UpstreamPathTemplate": "/api/chats/{chatId}/messages",
       "UpstreamHttpMethod": [ "GET", "POST" ],
       "DownstreamPathTemplate": "/api/chats/{chatId}/messages",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 5210
+        }
+      ]
+    },
+    {
+      // Slet en besked (afsenderen selv, med ?userId=). Query-strengen sendes automatisk videre af Ocelot
+      "UpstreamPathTemplate": "/api/chats/{chatId}/messages/{messageId}",
+      "UpstreamHttpMethod": [ "DELETE" ],
+      "DownstreamPathTemplate": "/api/chats/{chatId}/messages/{messageId}",
       "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {

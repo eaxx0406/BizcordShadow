@@ -30,6 +30,7 @@ Her dokumenterer vi de vigtige arkitekturbeslutninger i Bizcord: hvad vi valgte,
 | [0017](0017-modtagere-sendes-med-i-messagesent.md) | ChatService sender modtagerne med i MessageSent | Foreslået |
 | [0018](0018-delt-infrastruktur-i-shared.md) | Delt infrastruktur ligger i shared/ – MessageClient er den første | Foreslået |
 | [0019](0019-forlad-chat-og-medlemsperiode-som-value-object.md) | Man kan forlade en chat – medlemsperioden er et value object | Accepteret |
+| [0020](0020-rest-api-crud-og-statuskoder.md) | REST API med CRUD – omdøb chat, slet besked og faste regler for statuskoder | Accepteret |
 
 ## Skabelon
 

@@ -13,5 +13,8 @@ namespace ChatService.Repositories.Interfaces
 
         // Gemmer at en participation er afsluttet (participanten har forladt chatten).
         Task LeaveParticipationAsync(Participation participation, CancellationToken cancellationToken);
+
+        // Gemmer chattens nye navn.
+        Task UpdateNameAsync(Chat chat, CancellationToken cancellationToken);
     }
 }

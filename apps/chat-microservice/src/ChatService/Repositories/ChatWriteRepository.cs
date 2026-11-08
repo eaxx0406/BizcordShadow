@@ -82,5 +82,18 @@ namespace ChatService.Repositories
                 participation,
                 cancellationToken: cancellationToken));
         }
+
+        public async Task UpdateNameAsync(Chat chat, CancellationToken cancellationToken)
+        {
+            //forbinde til databasen
+            await using var connection = new NpgsqlConnection(_connectionString);
+            await connection.OpenAsync(cancellationToken);
+
+            //gem det nye navn (Chat.Rename har allerede tjekket reglerne)
+            await connection.ExecuteAsync(new CommandDefinition(
+                "UPDATE chat SET name = @Name WHERE id = @Id",
+                new { chat.Id, chat.Name },
+                cancellationToken: cancellationToken));
+        }
     }
 }

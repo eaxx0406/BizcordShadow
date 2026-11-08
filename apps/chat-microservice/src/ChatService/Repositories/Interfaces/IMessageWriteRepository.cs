@@ -7,5 +7,8 @@ namespace ChatService.Repositories.Interfaces
     {
         // Gemmer én ny besked.
         Task AddAsync(Message message, CancellationToken cancellationToken);
+
+        // Gemmer at en besked er slettet (soft delete, ADR 0020): tomt indhold og deleted_at.
+        Task MarkDeletedAsync(Message message, CancellationToken cancellationToken);
     }
 }

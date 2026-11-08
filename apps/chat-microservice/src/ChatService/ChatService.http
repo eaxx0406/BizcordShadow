@@ -1,41 +1,78 @@
 @ChatService_HostAddress = http://localhost:5210
 
+# Testdata fra 02-seed.sql: Emma = ...001, Oliver = ...002, Noah = ...003, Alma = ...010 (ikke med i "De sædvanlige")
+@emma = 10000000-0000-0000-0000-000000000001
+@oliver = 10000000-0000-0000-0000-000000000002
+@alma = 10000000-0000-0000-0000-000000000010
+@deSaedvanlige = c0000000-0000-0000-0000-000000000001
+
+# Opret en chat -> 201 Created + Location
 POST {{ChatService_HostAddress}}/api/chats
 Content-Type: application/json
 
 {
   "name": "Min første chat",
-  "createdByUserId": "10000000-0000-0000-0000-000000000001",
-  "participantUserIds": [
-    "10000000-0000-0000-0000-000000000002",
-    "10000000-0000-0000-0000-000000000003"
-  ]
+  "createdByUserId": "{{emma}}",
+  "participantUserIds": [ "{{oliver}}" ]
 }
 
 ###
 
-# Hent én chat med medlemmer (indsæt et id fra svaret på POST ovenfor)
-GET {{ChatService_HostAddress}}/api/chats/00000000-0000-0000-0000-000000000000?userId=10000000-0000-0000-0000-000000000001
-
-###
-
-# Mine chats (userId er Test Bruger, indtil der findes login)
-GET {{ChatService_HostAddress}}/api/chats?userId=10000000-0000-0000-0000-000000000001
-
-###
-
-# Send en besked (indsæt et chat-id, hvor afsenderen er medlem)
-POST {{ChatService_HostAddress}}/api/chats/00000000-0000-0000-0000-000000000000/messages
+# Opret en chat kun med sig selv -> 400 (Chat.Create)
+POST {{ChatService_HostAddress}}/api/chats
 Content-Type: application/json
 
 {
-  "senderUserId": "10000000-0000-0000-0000-000000000001",
+  "name": "Ensom chat",
+  "createdByUserId": "{{emma}}",
+  "participantUserIds": [ "{{emma}}" ]
+}
+
+###
+
+# Hent én chat med medlemmer -> 200 (Alma -> 403)
+GET {{ChatService_HostAddress}}/api/chats/{{deSaedvanlige}}?userId={{emma}}
+
+###
+
+# Mine chats -> 200 (tomt userId -> 400)
+GET {{ChatService_HostAddress}}/api/chats?userId={{emma}}
+
+###
+
+# Omdøb en chat -> 204 (Alma -> 403, tomt navn -> 400)
+PUT {{ChatService_HostAddress}}/api/chats/{{deSaedvanlige}}
+Content-Type: application/json
+
+{
+  "userId": "{{emma}}",
+  "name": "🍕 De sædvanlige"
+}
+
+###
+
+# Send en besked -> 201
+POST {{ChatService_HostAddress}}/api/chats/{{deSaedvanlige}}/messages
+Content-Type: application/json
+
+{
+  "senderUserId": "{{emma}}",
   "content": "Hej med jer!"
 }
 
 ###
 
 # Læs beskeder: de 30 nyeste. Ældre: tilføj &before=<id på den ældste besked, du har>
-GET {{ChatService_HostAddress}}/api/chats/00000000-0000-0000-0000-000000000000/messages?userId=10000000-0000-0000-0000-000000000001&limit=30
+GET {{ChatService_HostAddress}}/api/chats/{{deSaedvanlige}}/messages?userId={{emma}}&limit=30
+
+###
+
+# Slet en besked (indsæt id fra "Send en besked") -> 204. Oliver -> 403, ukendt id -> 404
+DELETE {{ChatService_HostAddress}}/api/chats/{{deSaedvanlige}}/messages/00000000-0000-0000-0000-000000000000?userId={{emma}}
+
+###
+
+# Forlad en chat -> 204
+DELETE {{ChatService_HostAddress}}/api/chats/{{deSaedvanlige}}/participants/{{oliver}}
 
 ###

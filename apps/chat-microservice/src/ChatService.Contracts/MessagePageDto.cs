@@ -5,5 +5,6 @@ namespace ChatService.Contracts
     public record MessagePageDto(IReadOnlyList<ChatMessageDto> Messages, bool HasOlder);
 
     // SenderUserId (ikke participation-id), så klienten kan se, hvilke beskeder der er ens egne (ADR 0003).
-    public record ChatMessageDto(Guid Id, Guid SenderUserId, string SenderName, string Content, DateTimeOffset SentAt);
+    // IsDeleted: beskeden er slettet af afsenderen. Den bliver i listen (så paging virker), men Content er tom.
+    public record ChatMessageDto(Guid Id, Guid SenderUserId, string SenderName, string Content, DateTimeOffset SentAt, bool IsDeleted);
 }

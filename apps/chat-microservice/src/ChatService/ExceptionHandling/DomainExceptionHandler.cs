@@ -24,6 +24,7 @@ namespace ChatService.ExceptionHandling
                 NotFoundException  => (StatusCodes.Status404NotFound, "Findes ikke"),
                 ForbiddenException => (StatusCodes.Status403Forbidden, "Ingen adgang"),
                 ConflictException  => (StatusCodes.Status409Conflict, "Konflikt med en regel"),
+                DomainValidationException => (StatusCodes.Status400BadRequest, "Ugyldigt input"),
                 _                  => (StatusCodes.Status500InternalServerError, "Der skete en uventet fejl")
             };
 
