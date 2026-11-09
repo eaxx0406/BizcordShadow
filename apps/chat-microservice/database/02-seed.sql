@@ -327,6 +327,17 @@ from participant p
 join participation pa on pa.participant_id = p.id and pa.chat_id = 'c0000000-0000-0000-0000-000000000010'
 where p.name = 'Kasper';
 
+-- 4c) Systembeskeder (ADR 0022): content er tom, frontenden laver teksten ud fra system_type og details.
+--     Rasmus omdøber chatten, da efterforskningen starter, og Kasper forlader chatten (samme tidspunkt som left_at i trin 3).
+insert into message (id, chat_id, sender_id, content, sent_at, kind, system_type, details)
+select gen_random_uuid(), pa.chat_id, pa.id, '', now() - make_interval(mins => s.minutes_ago), 'system', s.system_type, s.details::jsonb
+from (values
+    ('Rasmus', 6979, 'chat_renamed', '{"oldName": "🧊 Køkkenet, 2. sal", "newName": "🕵️ Hvem tog min mad?!"}'),
+    ('Kasper', 6890, 'member_left',  null)
+) as s(name, minutes_ago, system_type, details)
+join participant p on p.name = s.name
+join participation pa on pa.participant_id = p.id and pa.chat_id = 'c0000000-0000-0000-0000-000000000010';
+
 -- 5) Mormor sender godmorgen hver dag i 35 dage, så der er nok beskeder til "Vis ældre beskeder" (keyset paging, ADR 0014)
 insert into message (id, chat_id, sender_id, content, sent_at)
 select gen_random_uuid(), pa.chat_id, pa.id,

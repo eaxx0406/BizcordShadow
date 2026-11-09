@@ -10,12 +10,14 @@ namespace ChatService.ServiceLayer.RenameChat
         private readonly IChatWriteRepository _chatWriteRepository;
         private readonly IChatReadRepository _chatReadRepository;
         private readonly IParticipantReadRepository _participantReadRepository;
+        private readonly IMessageWriteRepository _messageWriteRepository;
 
-        public RenameChatHandler(IChatWriteRepository chatWriteRepository, IChatReadRepository chatReadRepository, IParticipantReadRepository participantReadRepository)
+        public RenameChatHandler(IChatWriteRepository chatWriteRepository, IChatReadRepository chatReadRepository, IParticipantReadRepository participantReadRepository, IMessageWriteRepository messageWriteRepository)
         {
             _chatWriteRepository = chatWriteRepository;
             _chatReadRepository = chatReadRepository;
             _participantReadRepository = participantReadRepository;
+            _messageWriteRepository = messageWriteRepository;
         }
 
         public async Task Handle(RenameChatCommand command, CancellationToken cancellationToken)
@@ -29,10 +31,20 @@ namespace ChatService.ServiceLayer.RenameChat
                 ?? throw new ForbiddenException("Du har ikke adgang til denne chat.");
 
             // 3) Domænet beslutter: kun aktive medlemmer, og navnet skal være gyldigt (Chat.Rename)
-            chat.Rename(participantId, command.Name);
+            //    (det gamle navn huskes til systembeskeden)
+            string oldName = chat.Name;
+            Participation renamedBy = chat.Rename(participantId, command.Name);
 
             // 4) Gem kun det, der er ændret: navnet
             await _chatWriteRepository.UpdateNameAsync(chat, cancellationToken);
+
+            // 5) Systembesked i tidslinjen: "Pia omdøbte chatten til ..." (ADR 0022).
+            //    Gemmes EFTER ændringen og ikke i samme transaction: fejler den, mangler der kun en linje i tidslinjen
+            //    (samme navn som før: intet skete, så ingen systembesked)
+            if (oldName != chat.Name)
+            {
+                await _messageWriteRepository.AddAsync(Message.ChatRenamed(chat.Id, renamedBy.Id, command.UserId, oldName, chat.Name), cancellationToken);
+            }
         }
     }
 }

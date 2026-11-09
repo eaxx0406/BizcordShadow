@@ -95,15 +95,15 @@ namespace ChatService.DomainModel.Entities
         }
 
         // Et aktivt medlem giver chatten et nyt navn. Alle medlemmer må, fordi der ikke findes roller.
-        public void Rename(Guid participantId, string newName)
+        // Returnerer medlemskabet hos den, der omdøbte (bruges som afsender af systembeskeden, ADR 0022).
+        public Participation Rename(Guid participantId, string newName)
         {
             // Regel: kun aktive medlemmer (samme svar som andre ikke-medlemmer, ADR 0013)
-            if (FindActiveParticipation(participantId) is null)
-            {
-                throw new ForbiddenException("Du har ikke adgang til denne chat.");
-            }
+            Participation participation = FindActiveParticipation(participantId)
+                ?? throw new ForbiddenException("Du har ikke adgang til denne chat.");
 
             Name = ValidateName(newName);
+            return participation;
         }
 
         // Regel for navne, både ved oprettelse og omdøbning: ikke tomt, højst MaxNameLength tegn, uden mellemrum i enderne

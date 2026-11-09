@@ -568,6 +568,18 @@ body {
   font-style: italic;
 }
 
+/* Systembesked (ADR 0022): "Kasper forlod chatten" – lille, dæmpet og centreret i tidslinjen */
+.msg-system {
+  align-self: center;
+  max-width: 90%;
+  padding: .2rem .75rem;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, .05);
+  color: var(--bz-text-muted);
+  font-size: .8rem;
+  text-align: center;
+}
+
 .chat-members {
   padding: 1.25rem 1rem;
   border-left: 1px solid rgba(255, 255, 255, .08);

@@ -2,6 +2,7 @@ using ChatService.DomainModel.Entities;
 using ChatService.Repositories.Interfaces;
 using Dapper;
 using Npgsql;
+using System.Text.Json;
 
 namespace ChatService.Repositories
 {
@@ -21,11 +22,23 @@ namespace ChatService.Repositories
             await using var connection = new NpgsqlConnection(_connectionString);
             await connection.OpenAsync(cancellationToken);
 
-            //indsæt beskeden i databasen
+            //indsæt beskeden i databasen (både almindelige beskeder og systembeskeder, ADR 0022)
             //(ingen transaction: det er kun én INSERT, og én SQL-sætning er altid alt-eller-intet)
+            //Details er en ordbog i C# og jsonb i databasen: vi sender den som JSON-tekst og caster den i SQL'en
             await connection.ExecuteAsync(new CommandDefinition(
-                "INSERT INTO message (id, chat_id, sender_id, content, sent_at) VALUES (@Id, @ChatId, @SenderId, @Content, @SentAt)",
-                message,
+                @"INSERT INTO message (id, chat_id, sender_id, content, sent_at, kind, system_type, details)
+                  VALUES (@Id, @ChatId, @SenderId, @Content, @SentAt, @Kind, @SystemType, CAST(@Details AS jsonb))",
+                new
+                {
+                    message.Id,
+                    message.ChatId,
+                    message.SenderId,
+                    message.Content,
+                    message.SentAt,
+                    message.Kind,
+                    message.SystemType,
+                    Details = message.Details is null ? null : JsonSerializer.Serialize(message.Details)
+                },
                 cancellationToken: cancellationToken));
         }
 

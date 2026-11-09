@@ -11,6 +11,16 @@
 }
 @foreach (var message in Model.Messages)
 {
+    @if (message.Kind == ChatService.Contracts.MessageKinds.System)
+    {
+        <!-- Systembesked (ADR 0022): ingen boble og ingen slet-knap, bare en linje midt i tidslinjen -->
+        <div class="msg-system">
+            @Bizcord.Models.SystemMessageText.For(message.SystemType, message.SenderName, message.Details)
+            · <time datetime="@message.SentAt.ToString("o")">@Bizcord.Models.MessageList.FormatTime(message.SentAt)</time>
+        </div>
+        continue;
+    }
+
     var mine = message.SenderUserId == Model.CurrentUserId;
     <div class="msg @(mine ? "msg-mine" : "") @(message.IsDeleted ? "msg-deleted" : "")">
         @if (!mine)

@@ -13,11 +13,14 @@ namespace Bizcord.Models
         public static ChatPreview From(ChatSummaryDto chat)
         {
             // LastMessageAt uden LastMessage = den seneste besked er slettet (ADR 0020)
+            // LastMessageSystemType sat = den seneste besked er en systembesked (ADR 0022)
             var lastMessage = chat.LastMessageAt is null
                 ? "Ingen beskeder endnu"
-                : chat.LastMessage is null
-                    ? $"{chat.LastMessageSenderName}: 🗑️ Beskeden er slettet"
-                    : $"{chat.LastMessageSenderName}: {chat.LastMessage}";
+                : chat.LastMessageSystemType is not null
+                    ? SystemMessageText.For(chat.LastMessageSystemType, chat.LastMessageSenderName)
+                    : chat.LastMessage is null
+                        ? $"{chat.LastMessageSenderName}: 🗑️ Beskeden er slettet"
+                        : $"{chat.LastMessageSenderName}: {chat.LastMessage}";
 
             return new ChatPreview(
                 chat.Id,

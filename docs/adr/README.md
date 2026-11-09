@@ -32,6 +32,7 @@ Her dokumenterer vi de vigtige arkitekturbeslutninger i Bizcord: hvad vi valgte,
 | [0019](0019-forlad-chat-og-medlemsperiode-som-value-object.md) | Man kan forlade en chat – medlemsperioden er et value object | Accepteret |
 | [0020](0020-rest-api-crud-og-statuskoder.md) | REST API med CRUD – omdøb chat, slet besked og faste regler for statuskoder | Accepteret |
 | [0021](0021-hvad-sletning-af-en-besked-betyder.md) | Hvad sletning af en besked betyder – teksten slettes rigtigt, arkivering er fravalgt | Accepteret |
+| [0022](0022-systembeskeder-i-tidslinjen.md) | Systembeskeder i tidslinjen – "Emma tilføjede Oliver" er en besked | Accepteret |
 
 ## Skabelon
 
