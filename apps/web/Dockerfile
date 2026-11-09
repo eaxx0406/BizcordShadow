@@ -5,6 +5,7 @@
 
 # ---- Trin 1: byg med SDK'et ----
 FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
+ARG BUILD_CONFIGURATION=Release
 WORKDIR /repo
 
 # Projektfilerne først: så genbruger Docker restore-laget, så længe pakkerne ikke ændres
@@ -15,7 +16,8 @@ RUN dotnet restore apps/web/src/Bizcord/Bizcord.csproj
 # Kun frontendens kode og kontrakterne (ikke resten af chat-microservice)
 COPY apps/web/src/ apps/web/src/
 COPY apps/chat-microservice/src/ChatService.Contracts/ apps/chat-microservice/src/ChatService.Contracts/
-RUN dotnet publish apps/web/src/Bizcord/Bizcord.csproj -c Release -o /app --no-restore
+RUN dotnet publish apps/web/src/Bizcord/Bizcord.csproj \
+    -c $BUILD_CONFIGURATION -o /app --no-restore /p:UseAppHost=false
 
 # ---- Trin 2: kør med kun runtime ----
 FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS runtime

@@ -5,6 +5,7 @@
 
 # ---- Trin 1: byg med SDK'et (stort image, bruges kun til at bygge) ----
 FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
+ARG BUILD_CONFIGURATION=Release
 WORKDIR /repo
 
 # Projektfilerne først: så genbruger Docker restore-laget, så længe pakkerne ikke ændres
@@ -16,7 +17,8 @@ RUN dotnet restore apps/chat-microservice/src/ChatService/ChatService.csproj
 # Så resten af koden, og publish
 COPY apps/chat-microservice/src/ apps/chat-microservice/src/
 COPY shared/src/ shared/src/
-RUN dotnet publish apps/chat-microservice/src/ChatService/ChatService.csproj -c Release -o /app --no-restore
+RUN dotnet publish apps/chat-microservice/src/ChatService/ChatService.csproj \
+    -c $BUILD_CONFIGURATION -o /app --no-restore /p:UseAppHost=false
 
 # ---- Trin 2: kør med kun runtime (lille image uden SDK og kildekode) ----
 FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS runtime
