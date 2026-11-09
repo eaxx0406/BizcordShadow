@@ -23,9 +23,11 @@ Alternativer for slet besked:
 - PUT og ikke PATCH: navnet er det eneste, der kan ændres på en chat, så PUT erstatter hele den redigerbare del.
 
 **Slet besked:** `DELETE /api/chats/{chatId}/messages/{messageId}?userId=` → `204`.
-- Vi vælger **B: soft delete**. `Message.Delete` tømmer `Content` og sætter `DeletedAt`. Teksten er væk for altid, men rækken bliver, så paging og samtalens forløb hænger sammen.
-- Kun **afsenderen** må slette, og kun som aktivt medlem. Andre medlemmer får `403` ("Du kan kun slette dine egne beskeder"). Ikke-medlemmer får `403` som altid. En besked, der ikke findes, giver `404`. Det afslører intet, fordi man allerede er medlem.
-- DELETE er **idempotent**: at slette en allerede slettet besked giver også `204`.
+- Vi vælger **B: soft delete**. Indholdet tømmes, og `deleted_at` sættes. Teksten er væk for altid, men rækken bliver, så paging og samtalens forløb hænger sammen. Hvorfor teksten ikke arkiveres, står i [0021](0021-hvad-sletning-af-en-besked-betyder.md).
+- **Kun afsenderen må slette.** Det er den eneste regel: er det din besked, må du slette den, uanset om du stadig er med i chatten.
+- **Reglen ligger i `Message.Delete`.** Handleren henter beskeden (med afsenderens user-id), `Message` afgør, om brugeren må slette den, og handleren gemmer. Det er to kald til databasen, men alle regler for sletning er samlet ét sted, når de udvides (fx med en moderator).
+- **Én fejl for alt:** `403` "Beskeden kunne ikke slettes", både når beskeden ikke findes, og når den ikke er din. Vi fortæller ikke hvorfor (mindst mulig information, [0013](0013-adgang-til-chats-og-mindst-mulig-information.md)), og vi slår ikke op, om man er medlem.
+- DELETE er **idempotent**: at slette sin egen, allerede slettede besked giver også `204` (det første tidspunkt bevares).
 - `userId` står i query-strengen, ikke i en body, fordi DELETE med body ikke understøttes alle steder.
 - Kontrakterne viser det udadtil med `ChatMessageDto.IsDeleted`. I listen over chats er `LastMessage` `null`, hvis den seneste besked er slettet.
 
@@ -65,11 +67,13 @@ Hver route er også oprettet i Ocelot ([0001](0001-api-gateway-med-ocelot.md)).
 
 ## Konsekvenser
 - ✅ Alle CRUD-operationer findes, og alle fejl har samme format (ProblemDetails).
-- ✅ Controllerne er tynde: de oversætter kun HTTP til commands/queries og vælger statuskode. Reglerne ligger i `Chat` og `Message`.
+- ✅ Controllerne er tynde: de oversætter kun HTTP til commands/queries og vælger statuskode. Navnereglen ligger i `Chat`.
+- ✅ Reglerne for, hvem der må slette, er samlet i `Message.Delete` og kan unit-testes uden database.
 - ✅ Slettede beskeder ødelægger ikke keyset paging, og samtalen giver stadig mening ("Beskeden er slettet").
 - ✅ `[NotEmptyGuid]` ligger i `ChatService.Contracts`, så klienter kan validere med samme regel.
 - ⚠️ Kontrakten er ændret: `ChatMessageDto` har fået `IsDeleted`, og flere request-typer har fået valideringsattributter. Det rammer frontenden, men ingen andre services.
 - ⚠️ Kræver `deleted_at` i schemaet. Lokalt skal databasen nulstilles (`docker compose down -v`), fordi vi ikke har migrations.
 - ⚠️ **`MessageDeleted` mangler.** Andre services har en kopi af indholdet fra `MessageSent` ([0017](0017-modtagere-sendes-med-i-messagesent.md)). Når en service viser beskeder eller previews (notifikationer, realtime), skal ChatService publicere `MessageDeleted`. Ellers bliver en slettet besked ved med at kunne ses der.
-- ⚠️ Afsenderen sammenlignes på medlemskab (participation), ikke på person. Har man forladt chatten og er blevet tilføjet igen, kan man ikke slette beskeder fra sit gamle medlemskab. Det accepterer vi.
+- ⚠️ Slet besked koster to kald (hent + gem). Vi har overvejet ét `UPDATE` med reglen i `WHERE`, men valgt at samle reglen i domænet. Sletning er sjælden, så det ekstra kald er billigt.
+- ℹ️ `Message` har fået `SenderUserId` (hentes via join, gemmes ikke i `message`), fordi `SenderId` er et participation-id. Afsenderen sammenlignes på user-id, så man kan også slette sine beskeder fra et tidligere medlemskab eller efter at have forladt chatten.
 - ⚠️ Kendt hul (som [0013](0013-adgang-til-chats-og-mindst-mulig-information.md)): uden login kan man omdøbe eller slette på vegne af en anden ved at sende deres user-id.

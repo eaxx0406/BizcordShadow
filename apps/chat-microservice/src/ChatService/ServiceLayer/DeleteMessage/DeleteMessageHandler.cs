@@ -5,33 +5,29 @@ using MediatR;
 
 namespace ChatService.ServiceLayer.DeleteMessage
 {
+    // Normal sletning (ADR 0021). Handleren henter og gemmer – Message afgør, om man må (Message.Delete).
     public class DeleteMessageHandler : IRequestHandler<DeleteMessageCommand>
     {
         private readonly IMessageReadRepository _messageReadRepository;
         private readonly IMessageWriteRepository _messageWriteRepository;
-        private readonly IParticipationReadRepository _participationReadRepository;
 
-        public DeleteMessageHandler(IMessageReadRepository messageReadRepository, IMessageWriteRepository messageWriteRepository, IParticipationReadRepository participationReadRepository)
+        public DeleteMessageHandler(IMessageReadRepository messageReadRepository, IMessageWriteRepository messageWriteRepository)
         {
             _messageReadRepository = messageReadRepository;
             _messageWriteRepository = messageWriteRepository;
-            _participationReadRepository = participationReadRepository;
         }
 
         public async Task Handle(DeleteMessageCommand command, CancellationToken cancellationToken)
         {
-            // 1) Kun aktive medlemmer. Samme svar, uanset om chatten ikke findes eller man ikke er med (ADR 0013)
-            Guid participationId = await _participationReadRepository.GetActiveIdAsync(command.ChatId, command.UserId, cancellationToken)
-                ?? throw new ForbiddenException("Du har ikke adgang til denne chat.");
-
-            // 2) Hent beskeden. Man ER medlem, så det afslører intet at sige, at beskeden ikke findes
+            //1. kald: hent beskeden (med afsenderens user-id)
+            //findes den ikke, får man samme fejl, som hvis den ikke er ens egen (ADR 0013)
             Message message = await _messageReadRepository.GetByIdAsync(command.ChatId, command.MessageId, cancellationToken)
-                ?? throw new NotFoundException("Beskeden findes ikke.");
+                ?? throw new ForbiddenException("Beskeden kunne ikke slettes.");
 
-            // 3) Domænet beslutter: kun afsenderen må slette (Message.Delete)
-            message.Delete(participationId);
+            //domænet afgør, om brugeren må slette den (kaster ForbiddenException ellers)
+            message.Delete(command.UserId);
 
-            // 4) Gem: tomt indhold og deleted_at
+            //2. kald: gem tom tekst og deleted_at
             await _messageWriteRepository.MarkDeletedAsync(message, cancellationToken);
         }
     }

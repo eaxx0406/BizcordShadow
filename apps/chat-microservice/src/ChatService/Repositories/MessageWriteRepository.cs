@@ -35,7 +35,7 @@ namespace ChatService.Repositories
             await using var connection = new NpgsqlConnection(_connectionString);
             await connection.OpenAsync(cancellationToken);
 
-            //soft delete (ADR 0020): rækken bliver, men indholdet overskrives, så teksten er væk for altid
+            //normal sletning (ADR 0021): rækken bliver, men teksten overskrives, så den er væk for altid
             //(@Content er tom og @DeletedAt er sat af Message.Delete – repository'et har ingen regler)
             await connection.ExecuteAsync(new CommandDefinition(
                 "UPDATE message SET content = @Content, deleted_at = @DeletedAt WHERE id = @Id",

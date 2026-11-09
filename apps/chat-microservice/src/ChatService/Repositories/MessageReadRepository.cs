@@ -64,9 +64,14 @@ namespace ChatService.Repositories
             //Åbn forbindelsen
             await connection.OpenAsync(cancellationToken);
 
-            //Hent beskeden, men kun hvis den hører til netop denne chat (ellers kunne man ramme en besked i en anden chat)
+            //Hent beskeden, men kun hvis den hører til netop denne chat (ellers kunne man ramme en besked i en anden chat).
+            //Join til participant for at få afsenderens user-id, som Message.Delete skal bruge
             MessageAggregateRow? row = await connection.QuerySingleOrDefaultAsync<MessageAggregateRow>(new CommandDefinition(
-                "SELECT id, chat_id, sender_id, content, sent_at, deleted_at FROM message WHERE id = @MessageId AND chat_id = @ChatId",
+                @"SELECT m.id, m.chat_id, m.sender_id, p.user_id AS sender_user_id, m.content, m.sent_at, m.deleted_at
+                  FROM message m
+                  JOIN participation sp ON sp.id = m.sender_id
+                  JOIN participant p ON p.id = sp.participant_id
+                  WHERE m.id = @MessageId AND m.chat_id = @ChatId",
                 new { ChatId = chatId, MessageId = messageId },
                 cancellationToken: cancellationToken));
 
@@ -80,6 +85,7 @@ namespace ChatService.Repositories
                 row.Id,
                 row.ChatId,
                 row.SenderId,
+                row.SenderUserId,
                 row.Content,
                 new DateTimeOffset(row.SentAt),
                 row.DeletedAt is null ? null : new DateTimeOffset(row.DeletedAt.Value));

@@ -53,7 +53,7 @@ namespace ChatService.Controllers
         [HttpDelete("{messageId:guid}")]
         public async Task<ActionResult> Delete(Guid chatId, Guid messageId, [FromQuery, NotEmptyGuid] Guid userId, CancellationToken cancellationToken)
         {
-            //MediatR will handle the command (403 if not a member or not the sender, 404 if the message doesn't exist)
+            //MediatR will handle the command, Message decides who may delete (403 "Beskeden kunne ikke slettes", whether it doesn't exist or isn't yours)
             await _mediator.Send(new DeleteMessageCommand(chatId, messageId, userId), cancellationToken);
 
             return NoContent();

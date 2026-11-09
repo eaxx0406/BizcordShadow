@@ -1,12 +1,13 @@
 namespace ChatService.Repositories
 {
-    // Simpel dataklasse, som Dapper fylder med én række fra message-tabellen.
+    // Simpel dataklasse, som Dapper fylder med én række fra message-tabellen (+ afsenderens user-id via join).
     // Bruges til at genopbygge Message-aggregatet (Message.Rehydrate), når en besked skal ændres.
     public class MessageAggregateRow
     {
         public Guid Id { get; set; }
         public Guid ChatId { get; set; }
         public Guid SenderId { get; set; }
+        public Guid SenderUserId { get; set; }
         public string Content { get; set; } = string.Empty;
 
         // DateTime og ikke DateTimeOffset: Npgsql læser timestamptz som DateTime (i UTC).
