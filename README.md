@@ -94,12 +94,26 @@ Arkitekturbeslutninger er beskrevet i [`docs/adr/`](docs/adr/README.md).
 Hver app har sin egen `Dockerfile`. Byg fra **roden af repoet**, fordi `web` bruger `ChatService.Contracts` fra `chat-microservice`:
 
 ```
-docker build -f apps/chat-microservice/Dockerfile -t bizcord/chat-microservice .
-docker build -f apps/api-gateway/Dockerfile       -t bizcord/api-gateway .
-docker build -f apps/web/Dockerfile               -t bizcord/web .
+docker build -f apps/chat-microservice/Dockerfile      -t bizcord/chat-microservice .
+docker build -f apps/realtime-communication/Dockerfile -t bizcord/realtime-communication .
+docker build -f apps/api-gateway/Dockerfile            -t bizcord/api-gateway .
+docker build -f apps/web/Dockerfile                    -t bizcord/web .
 ```
 
-At køre det hele i `docker compose` er et senere skridt: gatewayen og frontenden skal så finde services via navne i Docker i stedet for `localhost`.
+### Microservices i docker compose
+
+`chat-microservice` og `realtime-communication` kan køre i containere ved siden af infrastrukturen (profile `apps`):
+
+```
+docker compose --profile apps up -d --build
+```
+
+- De starter først, når RabbitMQ og deres database er **healthy** (`depends_on` + `condition: service_healthy`).
+- ChatService: http://localhost:8010, realtime-communication: http://localhost:8020/received (andre porte end Visual Studio).
+- Konfiguration kommer fra miljøvariabler i `compose.yaml` (`ConnectionStrings__RabbitMQ` osv.), ikke user-secrets.
+- Stop dem igen, før du kører fra Visual Studio: `docker compose --profile apps stop chat-microservice realtime-communication`. Kører begge realtime-services, deler de queue, og hver får kun hver anden besked.
+
+Gatewayen og frontenden er ikke med endnu: Ocelot skal så pege på servicenavne (`chat-microservice:8080`) i stedet for `localhost`.
 
 ## Konventioner
 

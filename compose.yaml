@@ -1,5 +1,7 @@
-# Lokal infrastruktur til udvikling. Services (ChatService, GatewayAPI, frontend) køres stadig fra Visual Studio.
-# Start:  docker compose up -d
+# Lokal infrastruktur (databaser, RabbitMQ) + microservices i containere.
+# Kun infrastruktur (services køres fra Visual Studio):  docker compose up -d
+# Også microservices i Docker (profile "apps"):          docker compose --profile apps up -d --build
+# Stop microservices igen (infrastrukturen kører videre): docker compose --profile apps stop chat-microservice realtime-communication
 # Nulstil database (kør schema/seed igen): docker compose down -v && docker compose up -d
 name: bizcord
 services:
@@ -47,11 +49,51 @@ services:
     ports:
       - "5672:5672"
       - "15672:15672"
+    # Health check: rabbitmq-diagnostics følger med i imaget. "ping" svarer først OK, når RabbitMQ er klar.
+    # Uden den ville depends_on kun vente på, at containeren er STARTET – ikke at RabbitMQ er klar (connection refused)
     healthcheck:
       test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
       interval: 5s
       timeout: 5s
       retries: 30
+
+  # ---- Microservices (profile "apps": startes kun med --profile apps) ----
+  # Inde i Docker-netværket hedder de andre containere deres servicenavn (chatdb, rabbitmq) – ikke localhost.
+  # Konfiguration som miljøvariabler: .NET læser ConnectionStrings__RabbitMQ som ConnectionStrings:RabbitMQ
+  # (samme nøgle som user-secrets bruger), så koden er uændret.
+  chat-microservice:
+    profiles: ["apps"]
+    build:
+      context: .                                     # roden af repoet (Dockerfilen kopierer fra shared/ og apps/)
+      dockerfile: apps/chat-microservice/Dockerfile
+    depends_on:
+      rabbitmq:
+        condition: service_healthy                   # vent til health checket er grønt, ikke bare startet
+      chatdb:
+        condition: service_healthy
+    ports:
+      - "8010:8080"                                  # 8010 på din maskine, så den ikke støder ind i 5210 fra Visual Studio
+    environment:
+      ConnectionStrings__ChatDb: "Host=chatdb;Database=chatdb;Username=${POSTGRES_USER:-bizcord};Password=${POSTGRES_PASSWORD:-bizcord}"
+      ConnectionStrings__RabbitMQ: "host=rabbitmq;username=${RABBITMQ_USER:-bizcord};password=${RABBITMQ_PASSWORD:-bizcord}"
+
+  # DUMMY: modtager MessageSent fra chat-microservice via RabbitMQ (ADR 0017)
+  realtime-communication:
+    profiles: ["apps"]
+    build:
+      context: .
+      dockerfile: apps/realtime-communication/Dockerfile
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+      realtimedb:
+        condition: service_healthy
+    ports:
+      - "8020:8080"                                  # 8020, så den ikke støder ind i 5220 fra Visual Studio
+    environment:
+      ConnectionStrings__RealTimeDb: "Host=realtimedb;Database=realtimedb;Username=${POSTGRES_USER:-bizcord};Password=${POSTGRES_PASSWORD:-bizcord}"
+      ConnectionStrings__RabbitMQ: "host=rabbitmq;username=${RABBITMQ_USER:-bizcord};password=${RABBITMQ_PASSWORD:-bizcord}"
+
 volumes:
   chatdata:
   realtimedata:
