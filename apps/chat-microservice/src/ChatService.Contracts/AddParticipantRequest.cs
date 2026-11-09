@@ -1,4 +1,6 @@
+using ChatService.Contracts.Validation;
+
 namespace ChatService.Contracts
 {
-    public record AddParticipantRequest(Guid UserId);
+    public record AddParticipantRequest([NotEmptyGuid] Guid UserId);
 }

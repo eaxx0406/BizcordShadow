@@ -548,6 +548,46 @@ body {
 .msg-time { font-size: .72rem; color: var(--bz-text-muted); margin: .15rem .5rem 0; }
 .msg-load-older { align-self: center; margin-bottom: .5rem; border-radius: 999px; }
 
+/* Tid + slet-knap under boblen. Knappen vises først, når man holder musen over (eller fokuserer) beskeden */
+.msg-meta { display: flex; align-items: center; gap: .25rem; }
+.msg-delete-form { margin: 0; }
+.msg-delete {
+  border: 0; background: none; padding: 0 .25rem;
+  color: var(--bz-text-muted); font-size: .75rem;
+  opacity: 0; transition: opacity .15s;
+}
+.msg:hover .msg-delete, .msg-delete:focus-visible { opacity: 1; }
+.msg-delete:hover { color: #ff6b81; }
+
+/* Rediger besked: blyanten bruger samme stil som slet-knappen; formularen folder ud under den */
+.msg-edited { font-size: .72rem; color: var(--bz-text-muted); font-style: italic; }
+.msg-edit summary { list-style: none; cursor: pointer; }
+.msg-edit summary::-webkit-details-marker { display: none; }
+.msg-edit[open] summary { opacity: 1; }
+.msg-edit summary:hover { color: var(--bz-primary); }
+.msg-edit-form { display: flex; flex-direction: column; align-items: flex-end; gap: .35rem; margin-top: .35rem; min-width: 16rem; }
+
+/* Slettet besked: dæmpet og i kursiv, også hvis det er ens egen */
+.msg-deleted .msg-bubble,
+.msg-mine.msg-deleted .msg-bubble {
+  background: transparent;
+  border: 1px dashed rgba(255, 255, 255, .2);
+  color: var(--bz-text-muted);
+  font-style: italic;
+}
+
+/* Systembesked (ADR 0022): "Kasper forlod chatten" – lille, dæmpet og centreret i tidslinjen */
+.msg-system {
+  align-self: center;
+  max-width: 90%;
+  padding: .2rem .75rem;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, .05);
+  color: var(--bz-text-muted);
+  font-size: .8rem;
+  text-align: center;
+}
+
 .chat-members {
   padding: 1.25rem 1rem;
   border-left: 1px solid rgba(255, 255, 255, .08);

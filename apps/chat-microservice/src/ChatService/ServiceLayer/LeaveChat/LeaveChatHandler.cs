@@ -10,12 +10,14 @@ namespace ChatService.ServiceLayer.LeaveChat
         private readonly IChatWriteRepository _chatWriteRepository;
         private readonly IChatReadRepository _chatReadRepository;
         private readonly IParticipantReadRepository _participantReadRepository;
+        private readonly IMessageWriteRepository _messageWriteRepository;
 
-        public LeaveChatHandler(IChatWriteRepository chatWriteRepository, IChatReadRepository chatReadRepository, IParticipantReadRepository participantReadRepository)
+        public LeaveChatHandler(IChatWriteRepository chatWriteRepository, IChatReadRepository chatReadRepository, IParticipantReadRepository participantReadRepository, IMessageWriteRepository messageWriteRepository)
         {
             _chatWriteRepository = chatWriteRepository;
             _chatReadRepository = chatReadRepository;
             _participantReadRepository = participantReadRepository;
+            _messageWriteRepository = messageWriteRepository;
         }
 
         public async Task Handle(LeaveChatCommand command, CancellationToken cancellationToken)
@@ -34,6 +36,10 @@ namespace ChatService.ServiceLayer.LeaveChat
 
             // 4) Gem kun det, der er ændret: den ene afsluttede participation
             await _chatWriteRepository.LeaveParticipationAsync(endedParticipation, cancellationToken);
+
+            // 5) Systembesked i tidslinjen: "Kasper forlod chatten" (ADR 0022).
+            //    Gemmes EFTER ændringen og ikke i samme transaction: fejler den, mangler der kun en linje i tidslinjen
+            await _messageWriteRepository.AddAsync(Message.MemberLeft(chat.Id, endedParticipation.Id, command.UserId), cancellationToken);
         }
     }
 }

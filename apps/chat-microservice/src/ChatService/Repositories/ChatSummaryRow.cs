@@ -12,5 +12,8 @@ namespace ChatService.Repositories
 
         // DateTime og ikke DateTimeOffset: Npgsql læser timestamptz som DateTime (i UTC).
         public DateTime? LastMessageAt { get; set; }
+
+        // Sat, hvis den seneste besked er en systembesked (ADR 0022)
+        public string? LastMessageSystemType { get; set; }
     }
 }

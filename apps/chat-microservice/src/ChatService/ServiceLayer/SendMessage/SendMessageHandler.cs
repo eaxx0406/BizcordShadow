@@ -32,7 +32,7 @@ namespace ChatService.ServiceLayer.SendMessage
             }
 
             // TODO (sammen): modtagernes MessageReceipts (tom besked afvises allerede med [Required] i SendMessageRequest)
-            Message newMessage = new Message(command.ChatId, senderParticipationId.Value, command.Content);
+            Message newMessage = new Message(command.ChatId, senderParticipationId.Value, command.SenderUserId, command.Content);
 
             await _messageWriteRepository.AddAsync(newMessage, cancellationToken);
 

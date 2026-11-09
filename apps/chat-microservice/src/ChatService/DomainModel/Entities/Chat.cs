@@ -13,13 +13,16 @@ namespace ChatService.DomainModel.Entities
         private readonly List<Participation> _participations = new();
         public IReadOnlyCollection<Participation> Participations => _participations;
 
-        private static int _maxParticipants = 50; 
+        private static int _maxParticipants = 50;
+
+        // Samme grænse som [MaxLength] i CreateChatRequest og RenameChatRequest
+        public const int MaxNameLength = 100;
 
         // Private: nye chats laves med Create, så de altid har medlemmer fra start.
         private Chat(string name)
         {
             Id = Guid.NewGuid();
-            Name = name;
+            Name = ValidateName(name);
         }
 
         // Opretter en ny chat med opretteren og mindst ét andet medlem (se ADR 0012).
@@ -37,7 +40,7 @@ namespace ChatService.DomainModel.Entities
             // Regel: en chat kun med en selv giver ikke mening
             if (chat._participations.Count < 2)
             {
-                throw new InvalidOperationException("En chat skal have mindst ét medlem ud over opretteren.");
+                throw new DomainValidationException("En chat skal have mindst ét medlem ud over opretteren.");
             }
 
             return chat;
@@ -89,6 +92,36 @@ namespace ChatService.DomainModel.Entities
 
             participation.Leave();
             return participation;
+        }
+
+        // Et aktivt medlem giver chatten et nyt navn. Alle medlemmer må, fordi der ikke findes roller.
+        // Returnerer medlemskabet hos den, der omdøbte (bruges som afsender af systembeskeden, ADR 0022).
+        public Participation Rename(Guid participantId, string newName)
+        {
+            // Regel: kun aktive medlemmer (samme svar som andre ikke-medlemmer, ADR 0013)
+            Participation participation = FindActiveParticipation(participantId)
+                ?? throw new ForbiddenException("Du har ikke adgang til denne chat.");
+
+            Name = ValidateName(newName);
+            return participation;
+        }
+
+        // Regel for navne, både ved oprettelse og omdøbning: ikke tomt, højst MaxNameLength tegn, uden mellemrum i enderne
+        private static string ValidateName(string name)
+        {
+            string trimmed = (name ?? string.Empty).Trim();
+
+            if (trimmed.Length == 0)
+            {
+                throw new DomainValidationException("Chatten skal have et navn.");
+            }
+
+            if (trimmed.Length > MaxNameLength)
+            {
+                throw new DomainValidationException($"Chatnavnet må højst være {MaxNameLength} tegn.");
+            }
+
+            return trimmed;
         }
 
         // Fælles opslag: participantens aktive medlemskab, eller null hvis der ikke er et

@@ -67,6 +67,10 @@ namespace Bizcord.Pages
         [BindProperty]
         public Guid NewParticipantUserId { get; set; }
 
+        // Det nye navn i "Omdøb chat"-dialogen
+        [BindProperty]
+        public string? RenamedChatName { get; set; }
+
         // Beskeden i skrivefeltet. Tom eller kun mellemrum sendes ikke ("." er fint).
         [BindProperty]
         public string? NewMessage { get; set; }
@@ -74,7 +78,7 @@ namespace Bizcord.Pages
         public string? StatusMessage { get; private set; }
         public bool IsError { get; private set; }
 
-        // Hvor fejlen fra et mislykket POST skal vises: dialogen "create" eller "add", eller skrivefeltet "message"
+        // Hvor fejlen fra et mislykket POST skal vises: dialogen "create", "add" eller "rename", eller skrivefeltet "message"
         public string? OpenDialog { get; private set; }
 
         public async Task OnGet()
@@ -97,7 +101,7 @@ namespace Bizcord.Pages
                 return new ContentResult { StatusCode = StatusCodes.Status502BadGateway, Content = result.Error, ContentType = "text/plain; charset=utf-8" };
             }
 
-            return Partial("_ChatMessages", new MessageList(result.Value!.Messages, result.Value.HasOlder, _currentUser.Id));
+            return Partial("_ChatMessages", new MessageList(result.Value!.Messages, result.Value.HasOlder, _currentUser.Id, OpenChatId.Value));
         }
 
         public async Task<IActionResult> OnPostCreateChat()
@@ -150,6 +154,72 @@ namespace Bizcord.Pages
             // Succes: vis chatten, så den nye deltager kan ses i medlemslisten
             FlashMessage = $"{name} er tilføjet til chatten.";
             return RedirectToPage("/Chat", new { id = ChatId });
+        }
+
+        public async Task<IActionResult> OnPostRenameChat()
+        {
+            OpenDialog = "rename";
+
+            if (OpenChatId is null)
+            {
+                return RedirectToPage("/Chat");
+            }
+
+            // Ingen tjek af tomt navn her: ChatService validerer (400), så fejlen kan ses i dialogen
+            var result = await _gateway.RenameChatAsync(OpenChatId.Value, new RenameChatRequest(_currentUser.Id, RenamedChatName ?? string.Empty));
+
+            if (!result.IsSuccess)
+            {
+                SetError($"Kunne ikke omdøbe chatten. {result.Error}");
+                await LoadPageAsync();
+                return Page();
+            }
+
+            FlashMessage = "Chatten er omdøbt.";
+            return RedirectToPage("/Chat", new { id = OpenChatId });
+        }
+
+        public async Task<IActionResult> OnPostEditMessage(Guid messageId, string? editedContent)
+        {
+            if (OpenChatId is null)
+            {
+                return RedirectToPage("/Chat");
+            }
+
+            // Ingen tjek her: ChatService validerer teksten (400), ejerskab (403) og de 15 minutter (409)
+            var result = await _gateway.EditMessageAsync(OpenChatId.Value, messageId, new EditMessageRequest(_currentUser.Id, editedContent ?? string.Empty));
+
+            if (!result.IsSuccess)
+            {
+                // Fejlen vises over skrivefeltet i den åbne chat
+                OpenDialog = "message";
+                SetError($"Kunne ikke redigere beskeden. {result.Error}");
+                await LoadPageAsync();
+                return Page();
+            }
+
+            return RedirectToPage("/Chat", new { id = OpenChatId });
+        }
+
+        public async Task<IActionResult> OnPostDeleteMessage(Guid messageId)
+        {
+            if (OpenChatId is null)
+            {
+                return RedirectToPage("/Chat");
+            }
+
+            var result = await _gateway.DeleteMessageAsync(OpenChatId.Value, messageId, _currentUser.Id);
+
+            if (!result.IsSuccess)
+            {
+                // Fejlen vises over skrivefeltet i den åbne chat
+                OpenDialog = "message";
+                SetError($"Kunne ikke slette beskeden. {result.Error}");
+                await LoadPageAsync();
+                return Page();
+            }
+
+            return RedirectToPage("/Chat", new { id = OpenChatId });
         }
 
         public async Task<IActionResult> OnPostLeaveChat()
@@ -247,7 +317,7 @@ namespace Bizcord.Pages
             var messages = await _gateway.GetMessagesAsync(OpenChatId.Value, _currentUser.Id);
             if (messages.IsSuccess)
             {
-                Messages = new MessageList(messages.Value!.Messages, messages.Value.HasOlder, _currentUser.Id);
+                Messages = new MessageList(messages.Value!.Messages, messages.Value.HasOlder, _currentUser.Id, OpenChatId.Value);
             }
             else
             {

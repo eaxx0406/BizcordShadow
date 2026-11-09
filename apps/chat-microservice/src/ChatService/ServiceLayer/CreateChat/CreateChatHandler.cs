@@ -22,7 +22,8 @@ namespace ChatService.ServiceLayer.CreateChat
             Guid creatorParticipantId = await GetParticipantIdAsync(command.CreatedByUserId, cancellationToken);
 
             List<Guid> memberParticipantIds = new();
-            foreach (Guid userId in command.ParticipantUserIds.Distinct())
+            // Opretteren er allerede med, så hvis klienten også har sendt sit eget id i listen, springes det over
+            foreach (Guid userId in command.ParticipantUserIds.Distinct().Where(id => id != command.CreatedByUserId))
             {
                 memberParticipantIds.Add(await GetParticipantIdAsync(userId, cancellationToken));
             }

@@ -1,5 +1,8 @@
 using ChatService.Contracts;
+using ChatService.Contracts.Validation;
 using ChatService.DomainModel.Entities;
+using ChatService.ServiceLayer.DeleteMessage;
+using ChatService.ServiceLayer.EditMessage;
 using ChatService.ServiceLayer.GetMessages;
 using ChatService.ServiceLayer.SendMessage;
 using System.ComponentModel.DataAnnotations;
@@ -10,6 +13,7 @@ namespace ChatService.Controllers
 {
     // Beskeder er deres eget aggregate, derfor egen controller.
     // URL'en ligger under chatten, fordi en besked altid hører til én chat.
+    // Validering og statuskoder følger samme regler som ChatsController (ADR 0020).
     [ApiController]
     [Route("api/chats/{chatId:guid}/messages")]
     public class MessagesController : ControllerBase
@@ -24,15 +28,9 @@ namespace ChatService.Controllers
         // GET api/chats/{chatId}/messages?userId=...&before=...&limit=30
         // userId sendes af klienten, indtil der findes login. before = id på den ældste besked, man allerede har.
         [HttpGet]
-        public async Task<ActionResult<MessagePageDto>> Get(Guid chatId, [FromQuery] Guid userId, [FromQuery] Guid? before,
+        public async Task<ActionResult<MessagePageDto>> Get(Guid chatId, [FromQuery, NotEmptyGuid] Guid userId, [FromQuery] Guid? before,
             [FromQuery, Range(1, 100)] int limit = 30, CancellationToken cancellationToken = default)
         {
-            // Validate the request ([Range] på limit giver automatisk 400 via [ApiController])
-            if (userId == Guid.Empty)
-            {
-                return BadRequest("User ID cannot be empty.");
-            }
-
             //MediatR will handle the query and return one page of messages, oldest first
             MessagePageDto page = await _mediator.Send(new GetMessagesQuery(chatId, userId, before, limit), cancellationToken);
 
@@ -40,19 +38,37 @@ namespace ChatService.Controllers
         }
 
         // POST api/chats/{chatId}/messages
+        // 201 Created med den nye besked. Ingen Location-header: der findes ikke en GET for én enkelt besked.
         [HttpPost]
         public async Task<ActionResult<MessageDto>> Send(Guid chatId, [FromBody] SendMessageRequest request, CancellationToken cancellationToken)
         {
-            // Validate the request
-            if (request.SenderUserId == Guid.Empty)
-            {
-                return BadRequest("Sender user ID cannot be empty.");
-            }
-
             //MediatR will handle the command and return the sent message
             Message message = await _mediator.Send(new SendMessageCommand(chatId, request.SenderUserId, request.Content), cancellationToken);
 
-            return Ok(new MessageDto(message.Id, message.ChatId, message.Content, message.SentAt));
+            return StatusCode(StatusCodes.Status201Created, new MessageDto(message.Id, message.ChatId, message.Content, message.SentAt));
+        }
+
+        // PUT api/chats/{chatId}/messages/{messageId}
+        // Afsenderen retter sin besked inden for 15 minutter (ADR 0020). 204 – der er intet nyt at sende tilbage.
+        [HttpPut("{messageId:guid}")]
+        public async Task<ActionResult> Edit(Guid chatId, Guid messageId, [FromBody] EditMessageRequest request, CancellationToken cancellationToken)
+        {
+            //MediatR will handle the command, Message decides who may edit and when (403 if not yours, 409 after 15 minutes)
+            await _mediator.Send(new EditMessageCommand(chatId, messageId, request.UserId, request.Content), cancellationToken);
+
+            return NoContent();
+        }
+
+        // DELETE api/chats/{chatId}/messages/{messageId}?userId=...
+        // Afsenderen sletter sin besked (soft delete, ADR 0020). userId i query'en og ikke i en body,
+        // fordi DELETE med body ikke er understøttet alle steder. 204 – også hvis den allerede var slettet (idempotent).
+        [HttpDelete("{messageId:guid}")]
+        public async Task<ActionResult> Delete(Guid chatId, Guid messageId, [FromQuery, NotEmptyGuid] Guid userId, CancellationToken cancellationToken)
+        {
+            //MediatR will handle the command, Message decides who may delete (403 "Beskeden kunne ikke slettes", whether it doesn't exist or isn't yours)
+            await _mediator.Send(new DeleteMessageCommand(chatId, messageId, userId), cancellationToken);
+
+            return NoContent();
         }
     }
 }

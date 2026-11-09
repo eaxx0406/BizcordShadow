@@ -110,12 +110,15 @@ namespace ChatService.Repositories
                          (SELECT count(*)::int FROM participation x WHERE x.chat_id = c.id AND x.left_at IS NULL) AS participant_count,
                          lm.content     AS last_message,
                          lm.sender_name AS last_message_sender_name,
-                         lm.sent_at     AS last_message_at
+                         lm.sent_at     AS last_message_at,
+                         lm.system_type AS last_message_system_type
                   FROM participant me
                   JOIN participation mine ON mine.participant_id = me.id AND mine.left_at IS NULL
                   JOIN chat c ON c.id = mine.chat_id
                   LEFT JOIN LATERAL (
-                      SELECT m.content, p.name AS sender_name, m.sent_at
+                      SELECT CASE WHEN m.deleted_at IS NULL THEN m.content END AS content, -- null, hvis den er slettet (ADR 0020)
+                             p.name AS sender_name, m.sent_at,
+                             m.system_type -- sat for systembeskeder (ADR 0022)
                       FROM message m
                       JOIN participation sp ON sp.id = m.sender_id
                       JOIN participant p ON p.id = sp.participant_id
@@ -135,7 +138,8 @@ namespace ChatService.Repositories
                     row.ParticipantCount,
                     row.LastMessage,
                     row.LastMessageSenderName,
-                    row.LastMessageAt is null ? null : new DateTimeOffset(row.LastMessageAt.Value)))
+                    row.LastMessageAt is null ? null : new DateTimeOffset(row.LastMessageAt.Value),
+                    row.LastMessageSystemType))
                 .ToList();
         }
     }

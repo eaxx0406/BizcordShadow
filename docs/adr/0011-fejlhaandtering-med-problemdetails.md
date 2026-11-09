@@ -25,7 +25,7 @@ Alternativer:
 
 | Situation | Status |
 |---|---|
-| Ugyldigt input | 400 |
+| Ugyldigt input (attributter på kontrakterne, eller `DomainValidationException` fra en guard – se [0020](0020-rest-api-crud-og-statuskoder.md)) | 400 |
 | Chat eller bruger findes ikke | 404 |
 | Allerede medlem / chatten er fuld | 409 |
 | Alt andet | 500 |

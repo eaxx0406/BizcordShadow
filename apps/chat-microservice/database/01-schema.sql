@@ -30,7 +30,20 @@ create table message (
     chat_id   uuid not null references chat(id) on delete restrict,
     sender_id uuid not null references participation(id) on delete restrict,
     content   text not null,
-    sent_at   timestamptz not null
+    sent_at   timestamptz not null,
+    -- Soft delete (ADR 0020): sat, når afsenderen har slettet beskeden. content er så tom.
+    deleted_at timestamptz,
+    -- Sat, når afsenderen har rettet beskeden (inden for 15 minutter, ADR 0020). Den gamle tekst gemmes ikke.
+    edited_at  timestamptz,
+    -- Systembeskeder (ADR 0022): 'user' = en person skrev, 'system' = noget skete i chatten.
+    -- For systembeskeder er content tom, sender_id er den, det handler om/som gjorde det,
+    -- system_type siger hvad (member_added, member_left, chat_renamed), og details har data (fx det nye navn).
+    kind        text not null default 'user',
+    system_type text,
+    details     jsonb,
+    constraint ck_message_kind check (
+        (kind = 'user' and system_type is null) or
+        (kind = 'system' and system_type is not null))
 );
 
 -- Keyset paging (ADR 0014): "de nyeste beskeder i en chat, ældre end X" bliver et opslag i dette index,

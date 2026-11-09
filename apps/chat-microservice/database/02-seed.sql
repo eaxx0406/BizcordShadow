@@ -268,6 +268,8 @@ from (values
     (10, 'Maja',   6985, 'Det er tredje gang i denne måned 😠'),
     (10, 'Rasmus', 6980, 'Jeg starter en efterforskning 🕵️ Alle mistænkte bedes blive i nærheden'),
     (10, 'Pia',    6975, 'Kasper havde lasagne i går. Bare siger det.'),
+    -- (Kasper skriver noget her, som han sletter igen – se trin 4b)
+    (10, 'Pia',    6971, 'Kasper, hvad slettede du lige der? 👀'),
     (10, 'Kasper', 6970, 'Det var MIN lasagne! Den var fra Netto!'),
     (10, 'Rasmus', 6965, 'Interessant. Hvilken Netto?'),
     (10, 'Kasper', 6960, 'Det kan jeg ikke huske'),
@@ -316,6 +318,25 @@ from (values
 join participant p on p.name = m.name
 join participation pa on pa.chat_id = ('c0000000-0000-0000-0000-' || lpad(m.chat::text, 12, '0'))::uuid
                      and pa.participant_id = p.id;
+
+-- 4b) En slettet besked (soft delete, ADR 0020): rækken findes, men indholdet er tomt, og deleted_at er sat.
+--     Kasper nåede at skrive noget om lasagnen, som han hurtigt slettede igen.
+insert into message (id, chat_id, sender_id, content, sent_at, deleted_at)
+select gen_random_uuid(), pa.chat_id, pa.id, '', now() - make_interval(mins => 6973), now() - make_interval(mins => 6972)
+from participant p
+join participation pa on pa.participant_id = p.id and pa.chat_id = 'c0000000-0000-0000-0000-000000000010'
+where p.name = 'Kasper';
+
+-- 4c) Systembeskeder (ADR 0022): content er tom, frontenden laver teksten ud fra system_type og details.
+--     Rasmus omdøber chatten, da efterforskningen starter, og Kasper forlader chatten (samme tidspunkt som left_at i trin 3).
+insert into message (id, chat_id, sender_id, content, sent_at, kind, system_type, details)
+select gen_random_uuid(), pa.chat_id, pa.id, '', now() - make_interval(mins => s.minutes_ago), 'system', s.system_type, s.details::jsonb
+from (values
+    ('Rasmus', 6979, 'chat_renamed', '{"oldName": "🧊 Køkkenet, 2. sal", "newName": "🕵️ Hvem tog min mad?!"}'),
+    ('Kasper', 6890, 'member_left',  null)
+) as s(name, minutes_ago, system_type, details)
+join participant p on p.name = s.name
+join participation pa on pa.participant_id = p.id and pa.chat_id = 'c0000000-0000-0000-0000-000000000010';
 
 -- 5) Mormor sender godmorgen hver dag i 35 dage, så der er nok beskeder til "Vis ældre beskeder" (keyset paging, ADR 0014)
 insert into message (id, chat_id, sender_id, content, sent_at)

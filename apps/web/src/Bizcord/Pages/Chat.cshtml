@@ -73,7 +73,11 @@
                     <h2>@chat.Name</h2>
                     <small>@chat.Participants.Count medlemmer</small>
                 </div>
-                <button type="button" class="btn bz-btn-icon ms-auto" data-bs-toggle="modal" data-bs-target="#addParticipantModal"
+                <button type="button" class="btn bz-btn-icon ms-auto" data-bs-toggle="modal" data-bs-target="#renameChatModal"
+                        title="Omdøb chat" aria-label="Omdøb chat">
+                    <i class="bi bi-pencil" aria-hidden="true"></i>
+                </button>
+                <button type="button" class="btn bz-btn-icon" data-bs-toggle="modal" data-bs-target="#addParticipantModal"
                         title="Tilføj deltager" aria-label="Tilføj deltager">
                     <i class="bi bi-person-plus" aria-hidden="true"></i>
                 </button>
@@ -242,6 +246,38 @@
     </div>
 </div>
 
+@if (Model.OpenChat is not null)
+{
+<!-- Omdøb den åbne chat (PUT api/chats/{id}, ADR 0020) -->
+<div class="modal fade" id="renameChatModal" tabindex="-1" aria-labelledby="renameChatTitle" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content bz-modal">
+            <div class="modal-header">
+                <h2 class="modal-title h5" id="renameChatTitle">Omdøb chat</h2>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Luk"></button>
+            </div>
+            <form method="post" asp-page-handler="RenameChat" asp-route-id="@Model.OpenChat.Id">
+                <div class="modal-body">
+                    @if (Model.OpenDialog == "rename" && Model.StatusMessage is not null)
+                    {
+                        <div class="alert alert-danger" role="alert">@Model.StatusMessage</div>
+                    }
+
+                    <!-- Ingen required/maxlength i browseren, så ChatService' validering (400) kan afprøves -->
+                    <label for="renamedChatName" class="form-label">Nyt navn</label>
+                    <input id="renamedChatName" name="RenamedChatName" class="form-control"
+                           value="@(Model.RenamedChatName ?? Model.OpenChat.Name)" autocomplete="off" />
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-light" data-bs-dismiss="modal">Annullér</button>
+                    <button type="submit" class="btn bz-btn-primary" data-loading-text="Gemmer …">Gem</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+}
+
 <!-- Tilføj deltager til en eksisterende chat (ADR 0010) -->
 <div class="modal fade" id="addParticipantModal" tabindex="-1" aria-labelledby="addParticipantTitle" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
@@ -351,6 +387,10 @@
         else if (Model.OpenDialog == "add")
         {
             <text>new bootstrap.Modal('#addParticipantModal').show();</text>
+        }
+        else if (Model.OpenDialog == "rename")
+        {
+            <text>new bootstrap.Modal('#renameChatModal').show();</text>
         }
     </script>
 }
