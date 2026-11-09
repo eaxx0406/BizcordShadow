@@ -559,6 +559,14 @@ body {
 .msg:hover .msg-delete, .msg-delete:focus-visible { opacity: 1; }
 .msg-delete:hover { color: #ff6b81; }
 
+/* Rediger besked: blyanten bruger samme stil som slet-knappen; formularen folder ud under den */
+.msg-edited { font-size: .72rem; color: var(--bz-text-muted); font-style: italic; }
+.msg-edit summary { list-style: none; cursor: pointer; }
+.msg-edit summary::-webkit-details-marker { display: none; }
+.msg-edit[open] summary { opacity: 1; }
+.msg-edit summary:hover { color: var(--bz-primary); }
+.msg-edit-form { display: flex; flex-direction: column; align-items: flex-end; gap: .35rem; margin-top: .35rem; min-width: 16rem; }
+
 /* Slettet besked: dæmpet og i kursiv, også hvis det er ens egen */
 .msg-deleted .msg-bubble,
 .msg-mine.msg-deleted .msg-bubble {

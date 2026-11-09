@@ -179,6 +179,28 @@ namespace Bizcord.Pages
             return RedirectToPage("/Chat", new { id = OpenChatId });
         }
 
+        public async Task<IActionResult> OnPostEditMessage(Guid messageId, string? editedContent)
+        {
+            if (OpenChatId is null)
+            {
+                return RedirectToPage("/Chat");
+            }
+
+            // Ingen tjek her: ChatService validerer teksten (400), ejerskab (403) og de 15 minutter (409)
+            var result = await _gateway.EditMessageAsync(OpenChatId.Value, messageId, new EditMessageRequest(_currentUser.Id, editedContent ?? string.Empty));
+
+            if (!result.IsSuccess)
+            {
+                // Fejlen vises over skrivefeltet i den åbne chat
+                OpenDialog = "message";
+                SetError($"Kunne ikke redigere beskeden. {result.Error}");
+                await LoadPageAsync();
+                return Page();
+            }
+
+            return RedirectToPage("/Chat", new { id = OpenChatId });
+        }
+
         public async Task<IActionResult> OnPostDeleteMessage(Guid messageId)
         {
             if (OpenChatId is null)

@@ -10,5 +10,8 @@ namespace ChatService.Repositories.Interfaces
 
         // Gemmer en slettet besked (tom tekst og deleted_at, sat af Message.Delete).
         Task MarkDeletedAsync(Message message, CancellationToken cancellationToken);
+
+        // Gemmer en rettet besked (ny tekst og edited_at, sat af Message.Edit).
+        Task MarkEditedAsync(Message message, CancellationToken cancellationToken);
     }
 }

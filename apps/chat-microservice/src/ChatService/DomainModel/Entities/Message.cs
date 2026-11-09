@@ -24,6 +24,12 @@ namespace ChatService.DomainModel.Entities
         public DateTimeOffset? DeletedAt { get; private set; }
         public bool IsDeleted => DeletedAt is not null;
 
+        // Sat, når afsenderen har rettet beskeden. null = aldrig rettet
+        public DateTimeOffset? EditedAt { get; private set; }
+
+        // Så længe efter afsendelse må man rette sin besked (ADR 0020)
+        public static readonly TimeSpan EditWindow = TimeSpan.FromMinutes(15);
+
         // Systembeskeder (ADR 0022): Kind er "user" eller "system" (MessageKinds).
         // SystemType siger, hvad der skete (SystemMessageTypes), og Details har data om det (fx det nye navn).
         // Vi gemmer data og ikke færdig tekst – klienten laver teksten.
@@ -77,7 +83,7 @@ namespace ChatService.DomainModel.Entities
 
         // Rehydrering: genopbygger en EKSISTERENDE besked ud fra data fra databasen. Bruges kun af repository'et.
         public static Message Rehydrate(Guid id, Guid chatId, Guid senderId, Guid senderUserId, string content, DateTimeOffset sentAt,
-            DateTimeOffset? deletedAt, string kind, string? systemType, IReadOnlyDictionary<string, string>? details)
+            DateTimeOffset? deletedAt, DateTimeOffset? editedAt, string kind, string? systemType, IReadOnlyDictionary<string, string>? details)
         {
             Message message = new Message();
             message.Id = id;
@@ -87,10 +93,31 @@ namespace ChatService.DomainModel.Entities
             message.Content = content;
             message.SentAt = sentAt;
             message.DeletedAt = deletedAt;
+            message.EditedAt = editedAt;
             message.Kind = kind;
             message.SystemType = systemType;
             message.Details = details;
             return message;
+        }
+
+        // Afsenderen retter sin besked. Den gamle tekst gemmes ikke (samme tankegang som ADR 0021).
+        public void Edit(Guid byUserId, string newContent)
+        {
+            // Regel: kun afsenderens egne, almindelige beskeder, som ikke er slettet.
+            // Samme tekst i alle tilfælde: vi fortæller ikke hvorfor (ADR 0013)
+            if (IsSystem || IsDeleted || byUserId != SenderUserId)
+            {
+                throw new ForbiddenException("Beskeden kunne ikke redigeres.");
+            }
+
+            // Regel: kun inden for EditWindow efter afsendelse. Det er ens egen besked, så her må vi gerne sige hvorfor (409)
+            if (DateTimeOffset.UtcNow > SentAt + EditWindow)
+            {
+                throw new ConflictException($"En besked kan kun redigeres i {EditWindow.TotalMinutes} minutter, efter den er sendt.");
+            }
+
+            Content = newContent;
+            EditedAt = DateTimeOffset.UtcNow;
         }
 
         // Sletter beskeden. Alle regler for, hvem der må slette, samles her (fx en moderator senere).

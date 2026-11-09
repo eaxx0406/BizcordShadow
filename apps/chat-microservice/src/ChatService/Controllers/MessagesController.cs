@@ -2,6 +2,7 @@ using ChatService.Contracts;
 using ChatService.Contracts.Validation;
 using ChatService.DomainModel.Entities;
 using ChatService.ServiceLayer.DeleteMessage;
+using ChatService.ServiceLayer.EditMessage;
 using ChatService.ServiceLayer.GetMessages;
 using ChatService.ServiceLayer.SendMessage;
 using System.ComponentModel.DataAnnotations;
@@ -45,6 +46,17 @@ namespace ChatService.Controllers
             Message message = await _mediator.Send(new SendMessageCommand(chatId, request.SenderUserId, request.Content), cancellationToken);
 
             return StatusCode(StatusCodes.Status201Created, new MessageDto(message.Id, message.ChatId, message.Content, message.SentAt));
+        }
+
+        // PUT api/chats/{chatId}/messages/{messageId}
+        // Afsenderen retter sin besked inden for 15 minutter (ADR 0020). 204 – der er intet nyt at sende tilbage.
+        [HttpPut("{messageId:guid}")]
+        public async Task<ActionResult> Edit(Guid chatId, Guid messageId, [FromBody] EditMessageRequest request, CancellationToken cancellationToken)
+        {
+            //MediatR will handle the command, Message decides who may edit and when (403 if not yours, 409 after 15 minutes)
+            await _mediator.Send(new EditMessageCommand(chatId, messageId, request.UserId, request.Content), cancellationToken);
+
+            return NoContent();
         }
 
         // DELETE api/chats/{chatId}/messages/{messageId}?userId=...

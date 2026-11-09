@@ -15,6 +15,9 @@ namespace ChatService.Repositories
         // Sat, hvis beskeden er slettet (ADR 0020)
         public DateTime? DeletedAt { get; set; }
 
+        // Sat, hvis beskeden er rettet
+        public DateTime? EditedAt { get; set; }
+
         // Systembeskeder (ADR 0022). Details er jsonb læst som tekst (se DetailsJson)
         public string Kind { get; set; } = string.Empty;
         public string? SystemType { get; set; }

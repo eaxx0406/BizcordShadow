@@ -52,7 +52,20 @@ namespace ChatService.Repositories
             //(@Content er tom og @DeletedAt er sat af Message.Delete – repository'et har ingen regler)
             await connection.ExecuteAsync(new CommandDefinition(
                 "UPDATE message SET content = @Content, deleted_at = @DeletedAt WHERE id = @Id",
-                message,
+                new { message.Id, message.Content, message.DeletedAt },
+                cancellationToken: cancellationToken));
+        }
+
+        public async Task MarkEditedAsync(Message message, CancellationToken cancellationToken)
+        {
+            //forbinde til databasen
+            await using var connection = new NpgsqlConnection(_connectionString);
+            await connection.OpenAsync(cancellationToken);
+
+            //gem den nye tekst og tidspunktet (Message.Edit har allerede tjekket reglerne – repository'et har ingen regler)
+            await connection.ExecuteAsync(new CommandDefinition(
+                "UPDATE message SET content = @Content, edited_at = @EditedAt WHERE id = @Id",
+                new { message.Id, message.Content, message.EditedAt },
                 cancellationToken: cancellationToken));
         }
     }

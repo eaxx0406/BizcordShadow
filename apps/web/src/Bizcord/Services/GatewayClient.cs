@@ -148,6 +148,22 @@ namespace Bizcord.Services
             }
         }
 
+        // PUT api/chats/{chatId}/messages/{messageId} -> GatewayAPI (Ocelot) -> ChatService. Retter en egen besked (inden for 15 minutter).
+        public async Task<GatewayResult> EditMessageAsync(Guid chatId, Guid messageId, EditMessageRequest request, CancellationToken ct = default)
+        {
+            try
+            {
+                using var response = await _http.PutAsJsonAsync($"api/chats/{chatId}/messages/{messageId}", request, ct);
+                return response.IsSuccessStatusCode
+                    ? GatewayResult.Ok()
+                    : GatewayResult.Fail(await ReadErrorAsync(response, ct));
+            }
+            catch (HttpRequestException)
+            {
+                return GatewayResult.Fail(ConnectionError);
+            }
+        }
+
         // DELETE api/chats/{chatId}/messages/{messageId}?userId=... -> GatewayAPI (Ocelot) -> ChatService. Sletter en egen besked.
         public async Task<GatewayResult> DeleteMessageAsync(Guid chatId, Guid messageId, Guid userId, CancellationToken ct = default)
         {

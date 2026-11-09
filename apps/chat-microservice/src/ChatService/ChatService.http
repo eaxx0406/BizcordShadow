@@ -6,6 +6,9 @@
 @alma = 10000000-0000-0000-0000-000000000010
 @deSaedvanlige = c0000000-0000-0000-0000-000000000001
 
+# Indsæt id'et fra svaret på "Send en besked" her, før du retter eller sletter
+@messageId = 00000000-0000-0000-0000-000000000000
+
 # Opret en chat -> 201 Created + Location
 POST {{ChatService_HostAddress}}/api/chats
 Content-Type: application/json
@@ -63,12 +66,24 @@ Content-Type: application/json
 ###
 
 # Læs beskeder: de 30 nyeste. Ældre: tilføj &before=<id på den ældste besked, du har>
+# Systembeskeder har "kind": "system" (se chat c0000000-...-000000000010 efter en nulstilling)
 GET {{ChatService_HostAddress}}/api/chats/{{deSaedvanlige}}/messages?userId={{emma}}&limit=30
 
 ###
 
-# Slet en besked (indsæt id fra "Send en besked") -> 204. Oliver -> 403, ukendt id -> 404
-DELETE {{ChatService_HostAddress}}/api/chats/{{deSaedvanlige}}/messages/00000000-0000-0000-0000-000000000000?userId={{emma}}
+# Ret en besked (@messageId) -> 204. Oliver/ukendt id -> 403, tom tekst -> 400, efter 15 minutter -> 409
+PUT {{ChatService_HostAddress}}/api/chats/{{deSaedvanlige}}/messages/{{messageId}}
+Content-Type: application/json
+
+{
+  "userId": "{{emma}}",
+  "content": "Hej med jer! (rettet)"
+}
+
+###
+
+# Slet en besked (@messageId) -> 204, også igen (idempotent). Oliver/ukendt id -> 403
+DELETE {{ChatService_HostAddress}}/api/chats/{{deSaedvanlige}}/messages/{{messageId}}?userId={{emma}}
 
 ###
 

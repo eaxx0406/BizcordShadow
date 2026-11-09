@@ -13,6 +13,7 @@ namespace ChatService.Repositories
         // DateTime og ikke DateTimeOffset: Npgsql læser timestamptz som DateTime (i UTC).
         public DateTime SentAt { get; set; }
         public DateTime? DeletedAt { get; set; }
+        public DateTime? EditedAt { get; set; }
 
         // Systembeskeder (ADR 0022). Details er jsonb læst som tekst (se DetailsJson)
         public string Kind { get; set; } = string.Empty;

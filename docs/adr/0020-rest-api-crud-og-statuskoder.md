@@ -31,6 +31,13 @@ Alternativer for slet besked:
 - `userId` står i query-strengen, ikke i en body, fordi DELETE med body ikke understøttes alle steder.
 - Kontrakterne viser det udadtil med `ChatMessageDto.IsDeleted`. I listen over chats er `LastMessage` `null`, hvis den seneste besked er slettet.
 
+**Rediger besked:** `PUT /api/chats/{chatId}/messages/{messageId}` med `{ userId, content }` → `204`.
+- Reglerne ligger i `Message.Edit`, ved siden af `Delete`: kun afsenderen, kun almindelige beskeder, ikke slettede.
+- **Kun i 15 minutter efter afsendelse** (`Message.EditWindow`), som i de fleste chat-apps. Efter det: `409` med grunden – det er ens egen besked, så vi må gerne sige hvorfor.
+- Ikke din, findes ikke, slettet eller systembesked: `403` "Beskeden kunne ikke redigeres" (samme princip som slet).
+- `edited_at` sættes, og `ChatMessageDto.IsEdited` får klienten til at vise "(redigeret)". Den gamle tekst gemmes ikke ([0021](0021-hvad-sletning-af-en-besked-betyder.md)).
+- Seed-beskederne er alle ældre end 15 minutter, så de kan ikke rettes – det er reglen, der virker. Send en ny besked for at prøve.
+
 **Ingen events endnu.** Hverken `ChatRenamed` eller `MessageDeleted` publiceres (YAGNI: ingen service bruger dem).
 
 **Faste regler for hele API'et:**
@@ -61,12 +68,14 @@ Alternativer for slet besked:
 | DELETE | `/api/chats/{chatId}/participants/{userId}` | 204 – forlad chat |
 | GET | `/api/chats/{chatId}/messages?userId=&before=&limit=` | 200 – én side beskeder |
 | POST | `/api/chats/{chatId}/messages` | 201 – send besked |
+| PUT | `/api/chats/{chatId}/messages/{messageId}` | 204 – ret egen besked (15 min) |
 | DELETE | `/api/chats/{chatId}/messages/{messageId}?userId=` | 204 – slet egen besked |
 
 Hver route er også oprettet i Ocelot ([0001](0001-api-gateway-med-ocelot.md)).
 
 ## Konsekvenser
-- ✅ Alle CRUD-operationer findes, og alle fejl har samme format (ProblemDetails).
+- ✅ Alle CRUD-operationer findes, og alle fejl har samme format (ProblemDetails). Beskeder har fuld CRUD: send (POST), hent (GET), ret (PUT) og slet (DELETE).
+- ⚠️ 15-minutters-reglen bruger `DateTimeOffset.UtcNow` direkte, så en unit test af reglen skal flytte `SentAt` (fx via `Rehydrate`). Bliver det besværligt, kan uret sendes ind med .NET's `TimeProvider`.
 - ✅ Controllerne er tynde: de oversætter kun HTTP til commands/queries og vælger statuskode. Navnereglen ligger i `Chat`.
 - ✅ Reglerne for, hvem der må slette, er samlet i `Message.Delete` og kan unit-testes uden database.
 - ✅ Slettede beskeder ødelægger ikke keyset paging, og samtalen giver stadig mening ("Beskeden er slettet").
